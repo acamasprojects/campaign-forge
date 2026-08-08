@@ -6,6 +6,7 @@ import TagManagerModal from "./components/TagManagerModal.jsx";
 import NpcPanel from "./components/panels/NpcPanel.jsx";
 import LocationPanel from "./components/panels/LocationPanel.jsx";
 import QuestPanel from "./components/panels/QuestPanel.jsx";
+import SessionPanel from "./components/panels/SessionPanel.jsx";
 import TagBrowserPanel from "./components/panels/TagBrowserPanel.jsx";
 import { uid } from "./data/model.js";
 
@@ -112,6 +113,16 @@ export default function App() {
                   update={store.updateCurrent}
                   flash={flash}
                   focusId={focus?.type === "quests" ? focus.id : null}
+                  onConsumeFocus={() => setFocus(null)}
+                  onNavigate={onNavigate}
+                />
+              )}
+              {tab === "sessions" && (
+                <SessionPanel
+                  campaign={store.current}
+                  update={store.updateCurrent}
+                  flash={flash}
+                  focusId={focus?.type === "sessions" ? focus.id : null}
                   onConsumeFocus={() => setFocus(null)}
                   onNavigate={onNavigate}
                 />

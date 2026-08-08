@@ -67,6 +67,8 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
   const allTags = collectTags(campaign.npcs);
   const questsForNpc = (npcId) =>
     campaign.quests.filter((q) => q.giverId === npcId || q.relatedNpcIds.includes(npcId));
+  const sessionsForNpc = (npcId) => campaign.sessions.filter((s) => s.relatedNpcIds.includes(npcId));
+  const sessionLabel = (s) => `Session ${s.sessionNumber}${s.title ? `: ${s.title}` : ""}`;
 
   const fieldsFor = (n) => [
     { value: n.name, weight: 3, label: "name" },
@@ -87,6 +89,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
       weight: 1,
       label: "relationships",
     },
+    { value: sessionsForNpc(n.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
   ];
 
   const extraFilter = (n) =>
@@ -219,6 +222,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
           {filtered.map((n) => {
             const expanded = expandedId === n.id;
             const linkedQuests = questsForNpc(n.id);
+            const linkedSessions = sessionsForNpc(n.id);
             const incomingRels = incomingRelationshipsFor(n.id);
             const otherNpcOptions = campaign.npcs
               .filter((x) => x.id !== n.id)
@@ -353,6 +357,19 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                       {linkedQuests.map((q) => (
                         <button key={q.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("quests", q.id)}>
                           {q.title || "Untitled quest"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {linkedSessions.length > 0 && (
+                  <div className="cf-field">
+                    <span className="cf-field-label">Mentioned in sessions</span>
+                    <div className="cf-chip-row">
+                      {linkedSessions.map((s) => (
+                        <button key={s.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("sessions", s.id)}>
+                          {sessionLabel(s)}
                         </button>
                       ))}
                     </div>

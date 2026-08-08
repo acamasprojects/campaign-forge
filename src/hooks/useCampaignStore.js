@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { emptyCampaign } from "../data/model.js";
+import { emptyCampaign, normalizeCampaign } from "../data/model.js";
 
 const STORE_KEY = "campaign-forge-data";
 
@@ -18,7 +18,7 @@ export function useCampaignStore() {
       const raw = localStorage.getItem(STORE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        setCampaigns(parsed.campaigns || []);
+        setCampaigns((parsed.campaigns || []).map(normalizeCampaign));
         setCurrentId(parsed.currentId || parsed.campaigns?.[0]?.id || null);
       }
     } catch {
@@ -82,8 +82,9 @@ export function useCampaignStore() {
   }, []);
 
   const importCampaign = useCallback((campaign) => {
-    setCampaigns((prev) => [...prev, campaign]);
-    setCurrentId(campaign.id);
+    const normalized = normalizeCampaign(campaign);
+    setCampaigns((prev) => [...prev, normalized]);
+    setCurrentId(normalized.id);
   }, []);
 
   return {
