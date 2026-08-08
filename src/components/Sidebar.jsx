@@ -9,6 +9,7 @@ export default function Sidebar({
   renameCampaign,
   onExportAll,
   onImportAll,
+  onManageTags,
 }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState("");
@@ -79,6 +80,9 @@ export default function Sidebar({
       <div className="cf-sidebar-footer">
         <div className="cf-sidebar-footer-text">Saved automatically in your browser.</div>
         <div className="cf-sidebar-footer-actions">
+          <button className="cf-btn cf-btn-ghost cf-btn-small" onClick={onManageTags} disabled={!currentId}>
+            Tags
+          </button>
           <button className="cf-btn cf-btn-ghost cf-btn-small" onClick={onExportAll} disabled={campaigns.length === 0}>
             Export
           </button>

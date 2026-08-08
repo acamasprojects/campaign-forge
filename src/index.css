@@ -227,6 +227,32 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
 .cf-suggestions { margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .cf-suggestions-label { font-size: 12px; color: var(--text-faint); }
 
+/* ---------- modal ---------- */
+.cf-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.cf-modal {
+  background: var(--ink-2); border: 1px solid var(--border-3); border-radius: 10px;
+  width: 100%; max-width: 480px; max-height: 84vh; display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.cf-modal-wide { max-width: 720px; }
+.cf-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.cf-modal-title { font-family: var(--font-display); font-size: 17px; color: var(--text-bright); margin: 0; }
+.cf-modal-body { padding: 16px 20px 20px; overflow-y: auto; }
+
+/* ---------- tag manager ---------- */
+.cf-tag-manager-list { display: flex; flex-direction: column; gap: 10px; }
+.cf-tag-manager-row { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+.cf-tag-manager-info { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.cf-tag-manager-count { font-size: 11px; color: var(--text-faint); }
+.cf-tag-manager-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.cf-tag-manager-rename-input { flex: 1; min-width: 100px; padding: 6px 10px; font-size: 12.5px; }
+
 /* ---------- toast ---------- */
 .cf-toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
