@@ -5,7 +5,7 @@ import { toggleValue } from "../utils/search.js";
  * rows (e.g. status, disposition, tags) — each entry needs a label, all its
  * possible values, the currently active subset, and a setter.
  */
-export default function FilterBar({ search, onSearch, groups, onClearAll, resultCount }) {
+export default function FilterBar({ search, onSearch, groups, onClearAll, resultCount, sort }) {
   const anyActive = search.trim() !== "" || groups.some((g) => g.active.length > 0);
 
   return (
@@ -18,6 +18,15 @@ export default function FilterBar({ search, onSearch, groups, onClearAll, result
           onChange={(e) => onSearch(e.target.value)}
         />
         <span className="cf-result-count">{resultCount} result{resultCount === 1 ? "" : "s"}</span>
+        {sort && (
+          <select className="cf-input cf-sort-select" value={sort.value} onChange={(e) => sort.onChange(e.target.value)}>
+            {sort.options.map((o) => (
+              <option key={o.value} value={o.value}>
+                Sort: {o.label}
+              </option>
+            ))}
+          </select>
+        )}
         {anyActive && (
           <button type="button" className="cf-btn cf-btn-ghost cf-btn-small" onClick={onClearAll}>
             Clear filters
