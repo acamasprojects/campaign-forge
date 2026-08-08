@@ -5,8 +5,8 @@ import { toggleValue } from "../utils/search.js";
  * rows (e.g. status, disposition, tags) — each entry needs a label, all its
  * possible values, the currently active subset, and a setter.
  */
-export default function FilterBar({ search, onSearch, groups, onClearAll, resultCount, sort }) {
-  const anyActive = search.trim() !== "" || groups.some((g) => g.active.length > 0);
+export default function FilterBar({ search, onSearch, groups, onClearAll, resultCount, sort, pinnedOnly }) {
+  const anyActive = search.trim() !== "" || groups.some((g) => g.active.length > 0) || (pinnedOnly && pinnedOnly.active);
 
   return (
     <div className="cf-filter-bar">
@@ -18,6 +18,15 @@ export default function FilterBar({ search, onSearch, groups, onClearAll, result
           onChange={(e) => onSearch(e.target.value)}
         />
         <span className="cf-result-count">{resultCount} result{resultCount === 1 ? "" : "s"}</span>
+        {pinnedOnly && (
+          <button
+            type="button"
+            className={`cf-chip cf-pinned-toggle${pinnedOnly.active ? " cf-chip-active" : ""}`}
+            onClick={() => pinnedOnly.onChange(!pinnedOnly.active)}
+          >
+            ★ Pinned only
+          </button>
+        )}
         {sort && (
           <select className="cf-input cf-sort-select" value={sort.value} onChange={(e) => sort.onChange(e.target.value)}>
             {sort.options.map((o) => (

@@ -34,7 +34,9 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
   const [search, setSearch] = useState("");
   const [activeStatuses, setActiveStatuses] = useState([]);
   const [activeLocations, setActiveLocations] = useState([]);
+  const [activeArcs, setActiveArcs] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
+  const [pinnedOnly, setPinnedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
   const cardRefs = useRef({});
@@ -60,6 +62,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
   }, [focusId]);
 
   const allTags = collectTags(campaign.quests);
+  const allArcs = Array.from(new Set(campaign.quests.map((q) => q.arc).filter(Boolean))).sort((a, b) => a.localeCompare(b));
   const relatedNpcNames = (q) => q.relatedNpcIds.map((id) => npcName(id)).filter(Boolean).join(" ");
   const sessionsForQuest = (questId) => campaign.sessions.filter((s) => s.relatedQuestIds.includes(questId));
   const sessionLabel = (s) => `Session ${s.sessionNumber}${s.title ? `: ${s.title}` : ""}`;
@@ -67,6 +70,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
   const fieldsFor = (q) => [
     { value: q.title, weight: 3, label: "title" },
     { value: q.status, weight: 1, label: "status" },
+    { value: q.arc, weight: 1.5, label: "arc" },
     { value: npcName(q.giverId), weight: 1.5, label: "giver" },
     { value: locationName(q.locationId), weight: 1, label: "location" },
     { value: relatedNpcNames(q), weight: 1, label: "related NPCs" },
@@ -79,6 +83,8 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
   const extraFilter = (q) =>
     (activeStatuses.length === 0 || activeStatuses.includes(q.status)) &&
     (activeLocations.length === 0 || activeLocations.includes(q.locationId)) &&
+    (activeArcs.length === 0 || activeArcs.includes(q.arc)) &&
+    (!pinnedOnly || q.pinned) &&
     hasAllTags(q.tags, activeTags);
 
   const results = searchAndFilter(campaign.quests, { search, fieldsFn: fieldsFor, extraFilter });
@@ -130,19 +136,29 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
         </button>
       </div>
 
+      <datalist id="cf-quest-arc-options">
+        {allArcs.map((a) => (
+          <option key={a} value={a} />
+        ))}
+      </datalist>
+
       <FilterBar
         search={search}
         onSearch={setSearch}
         resultCount={filtered.length}
         sort={{ value: sortMode, options: SORT_OPTIONS, onChange: setSortMode }}
+        pinnedOnly={{ active: pinnedOnly, onChange: setPinnedOnly }}
         onClearAll={() => {
           setSearch("");
           setActiveStatuses([]);
           setActiveLocations([]);
+          setActiveArcs([]);
           setActiveTags([]);
+          setPinnedOnly(false);
         }}
         groups={[
           { label: "Status", values: QUEST_STATUSES, active: activeStatuses, setActive: setActiveStatuses },
+          { label: "Arc", values: allArcs, active: activeArcs, setActive: setActiveArcs },
           {
             label: "Location",
             values: campaign.locations.map((l) => l.id),
@@ -185,10 +201,15 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
                 onDelete={() => {
                   if (confirm(`Delete quest "${q.title || "Untitled"}"?`)) removeQuest(q.id);
                 }}
+                pinned={q.pinned}
+                onTogglePin={() => setField(q.id, "pinned", !q.pinned)}
                 badges={
-                  <span className="cf-badge" style={{ color: STATUS_COLOR[q.status], borderColor: STATUS_COLOR[q.status] }}>
-                    {q.status}
-                  </span>
+                  <>
+                    <span className="cf-badge" style={{ color: STATUS_COLOR[q.status], borderColor: STATUS_COLOR[q.status] }}>
+                      {q.status}
+                    </span>
+                    {q.arc && <span className="cf-badge cf-badge-muted">{q.arc}</span>}
+                  </>
                 }
                 meta={<span className="cf-card-submeta">{locationName(q.locationId) || ""}</span>}
                 matchNote={matchNoteFor(q.id)}
@@ -203,6 +224,17 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
                 <div className="cf-field">
                   <span className="cf-field-label">Status</span>
                   <ChoiceChips values={QUEST_STATUSES} value={q.status} onChange={(v) => setField(q.id, "status", v)} />
+                </div>
+
+                <div className="cf-field">
+                  <span className="cf-field-label">Arc / chapter</span>
+                  <input
+                    className="cf-input"
+                    list="cf-quest-arc-options"
+                    value={q.arc}
+                    onChange={(e) => setField(q.id, "arc", e.target.value)}
+                    placeholder="Chapter 2: The Sunken Vault"
+                  />
                 </div>
 
                 <div className="cf-form-grid">
