@@ -1,7 +1,9 @@
+import { printPrepSheet } from "../../utils/printPrepSheet.js";
+
 /**
  * Landing view: what a DM wants to see opening the app right before a
- * session — the last recap, what's still active, and whatever's pinned —
- * without hunting across four tabs first.
+ * session — the last recap, what's still active, the party, and whatever's
+ * pinned — without hunting across every tab first.
  */
 export default function DashboardPanel({ campaign, onNavigate }) {
   const lastSession = campaign.sessions.reduce(
@@ -18,13 +20,27 @@ export default function DashboardPanel({ campaign, onNavigate }) {
   });
 
   const pinnedNpcs = campaign.npcs.filter((n) => n.pinned);
+  const pinnedPcs = campaign.pcs.filter((p) => p.pinned);
+  const pinnedFactions = campaign.factions.filter((f) => f.pinned);
   const pinnedLocations = campaign.locations.filter((l) => l.pinned);
   const pinnedQuests = campaign.quests.filter((q) => q.pinned);
   const pinnedSessions = campaign.sessions.filter((s) => s.pinned);
-  const anyPinned = pinnedNpcs.length + pinnedLocations.length + pinnedQuests.length + pinnedSessions.length > 0;
+  const anyPinned =
+    pinnedNpcs.length +
+      pinnedPcs.length +
+      pinnedFactions.length +
+      pinnedLocations.length +
+      pinnedQuests.length +
+      pinnedSessions.length >
+    0;
 
   const isEmpty =
-    campaign.npcs.length === 0 && campaign.locations.length === 0 && campaign.quests.length === 0 && campaign.sessions.length === 0;
+    campaign.npcs.length === 0 &&
+    campaign.locations.length === 0 &&
+    campaign.quests.length === 0 &&
+    campaign.sessions.length === 0 &&
+    campaign.factions.length === 0 &&
+    campaign.pcs.length === 0;
 
   if (isEmpty) {
     return (
@@ -41,6 +57,9 @@ export default function DashboardPanel({ campaign, onNavigate }) {
     <div className="cf-panel">
       <div className="cf-panel-head-row">
         <h2 className="cf-panel-title">Dashboard</h2>
+        <button className="cf-btn cf-btn-ghost" onClick={() => printPrepSheet(campaign)}>
+          Print Prep Sheet
+        </button>
       </div>
 
       <div className="cf-dashboard-section">
@@ -87,13 +106,31 @@ export default function DashboardPanel({ campaign, onNavigate }) {
         )}
       </div>
 
+      {campaign.pcs.length > 0 && (
+        <div className="cf-dashboard-section">
+          <h3 className="cf-dashboard-heading">
+            Party <span className="cf-tag-browser-count">{campaign.pcs.length}</span>
+          </h3>
+          <div className="cf-chip-row">
+            {campaign.pcs.map((p) => (
+              <button key={p.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("pcs", p.id)}>
+                {p.name || "Untitled"}
+                {p.classLevel ? ` — ${p.classLevel}` : ""}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="cf-dashboard-section">
         <h3 className="cf-dashboard-heading">★ Pinned</h3>
         {!anyPinned ? (
-          <div className="cf-empty-panel">Nothing pinned yet — star an NPC, Location, Quest, or Session to keep it here.</div>
+          <div className="cf-empty-panel">Nothing pinned yet — star anything in the campaign to keep it here.</div>
         ) : (
           <>
             <PinnedGroup label="NPCs" items={pinnedNpcs} nameOf={(n) => n.name} onPick={(id) => onNavigate("npcs", id)} />
+            <PinnedGroup label="Party" items={pinnedPcs} nameOf={(p) => p.name} onPick={(id) => onNavigate("pcs", id)} />
+            <PinnedGroup label="Factions" items={pinnedFactions} nameOf={(f) => f.name} onPick={(id) => onNavigate("factions", id)} />
             <PinnedGroup label="Locations" items={pinnedLocations} nameOf={(l) => l.name} onPick={(id) => onNavigate("locations", id)} />
             <PinnedGroup label="Quests" items={pinnedQuests} nameOf={(q) => q.title} onPick={(id) => onNavigate("quests", id)} />
             <PinnedGroup
