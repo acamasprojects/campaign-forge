@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { emptyLocation, LOCATION_TYPES } from "../../data/model.js";
-import { textMatches, hasAllTags, collectTags } from "../../utils/search.js";
+import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
 import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
@@ -32,12 +32,29 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
 
   const allTags = collectTags(campaign.locations);
 
-  const filtered = campaign.locations.filter(
-    (l) =>
-      textMatches(search, l.name, l.type, nameOf(l.parentId), l.description, (l.tags || []).join(" ")) &&
-      (activeTypes.length === 0 || activeTypes.includes(l.type)) &&
-      hasAllTags(l.tags, activeTags)
-  );
+  const fieldsFor = (l) => [
+    { value: l.name, weight: 3, label: "name" },
+    { value: l.type, weight: 1, label: "type" },
+    { value: nameOf(l.parentId), weight: 1, label: "parent location" },
+    { value: (l.tags || []).join(" "), weight: 2, label: "tags" },
+    { value: l.description, weight: 0.5, label: "description" },
+  ];
+
+  const extraFilter = (l) => (activeTypes.length === 0 || activeTypes.includes(l.type)) && hasAllTags(l.tags, activeTags);
+
+  const results = searchAndFilter(campaign.locations, { search, fieldsFn: fieldsFor, extraFilter });
+  const filtered = results.map((r) => r.item);
+  const matchNoteFor = (id) => {
+    const r = results.find((x) => x.item.id === id);
+    if (!search.trim() || !r || r.matchedFields.length === 0) return null;
+    if (r.matchedFields.length === 1 && r.matchedFields[0] === "name") return null;
+    return `matched: ${r.matchedFields.join(", ")}`;
+  };
+
+  const suggestions =
+    filtered.length === 0 && search.trim() && campaign.locations.length > 0
+      ? suggestClosest(search, [...campaign.locations.map((l) => l.name), ...allTags])
+      : [];
 
   const addLocation = () => {
     const l = emptyLocation();
@@ -97,7 +114,19 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
       {campaign.locations.length === 0 ? (
         <div className="cf-empty-panel">No locations yet. Add one to start mapping the world.</div>
       ) : filtered.length === 0 ? (
-        <div className="cf-empty-panel">No locations match the current filters.</div>
+        <div className="cf-empty-panel">
+          No locations match the current filters.
+          {suggestions.length > 0 && (
+            <div className="cf-suggestions">
+              <span className="cf-suggestions-label">Did you mean:</span>
+              {suggestions.map((s) => (
+                <button key={s} type="button" className="cf-chip cf-chip-link" onClick={() => setSearch(s)}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <div className="cf-card-list">
           {filtered.map((l) => {
@@ -125,6 +154,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
                   </>
                 }
                 meta={<span className="cf-card-submeta">{npcs.length > 0 ? `${npcs.length} NPC${npcs.length === 1 ? "" : "s"}` : ""}</span>}
+                matchNote={matchNoteFor(l.id)}
               >
                 <div className="cf-form-grid">
                   <label className="cf-field">
@@ -150,7 +180,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
 
                 <div className="cf-field">
                   <span className="cf-field-label">Tags</span>
-                  <TagInput tags={l.tags} onChange={(tags) => setField(l.id, "tags", tags)} />
+                  <TagInput tags={l.tags} onChange={(tags) => setField(l.id, "tags", tags)} suggestions={allTags} />
                 </div>
 
                 <div className="cf-field">

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { emptyNpc, DISPOSITIONS } from "../../data/model.js";
-import { textMatches, hasAllTags, collectTags } from "../../utils/search.js";
+import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
 import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
@@ -42,13 +42,34 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
 
   const allTags = collectTags(campaign.npcs);
 
-  const filtered = campaign.npcs.filter(
-    (n) =>
-      textMatches(search, n.name, n.role, n.race, n.faction, locationName(n.locationId), n.description, (n.tags || []).join(" ")) &&
-      (activeDispositions.length === 0 || activeDispositions.includes(n.disposition)) &&
-      (activeLocations.length === 0 || activeLocations.includes(n.locationId)) &&
-      hasAllTags(n.tags, activeTags)
-  );
+  const fieldsFor = (n) => [
+    { value: n.name, weight: 3, label: "name" },
+    { value: n.role, weight: 1.5, label: "role" },
+    { value: n.faction, weight: 1.5, label: "faction" },
+    { value: n.race, weight: 1, label: "race" },
+    { value: locationName(n.locationId), weight: 1, label: "location" },
+    { value: (n.tags || []).join(" "), weight: 2, label: "tags" },
+    { value: n.description, weight: 0.5, label: "description" },
+  ];
+
+  const extraFilter = (n) =>
+    (activeDispositions.length === 0 || activeDispositions.includes(n.disposition)) &&
+    (activeLocations.length === 0 || activeLocations.includes(n.locationId)) &&
+    hasAllTags(n.tags, activeTags);
+
+  const results = searchAndFilter(campaign.npcs, { search, fieldsFn: fieldsFor, extraFilter });
+  const filtered = results.map((r) => r.item);
+  const matchNoteFor = (id) => {
+    const r = results.find((x) => x.item.id === id);
+    if (!search.trim() || !r || r.matchedFields.length === 0) return null;
+    if (r.matchedFields.length === 1 && r.matchedFields[0] === "name") return null;
+    return `matched: ${r.matchedFields.join(", ")}`;
+  };
+
+  const suggestions =
+    filtered.length === 0 && search.trim() && campaign.npcs.length > 0
+      ? suggestClosest(search, [...campaign.npcs.map((n) => n.name), ...allTags])
+      : [];
 
   const addNpc = () => {
     const n = emptyNpc();
@@ -122,7 +143,19 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
       {campaign.npcs.length === 0 ? (
         <div className="cf-empty-panel">No NPCs yet. Add one to start populating your world.</div>
       ) : filtered.length === 0 ? (
-        <div className="cf-empty-panel">No NPCs match the current filters.</div>
+        <div className="cf-empty-panel">
+          No NPCs match the current filters.
+          {suggestions.length > 0 && (
+            <div className="cf-suggestions">
+              <span className="cf-suggestions-label">Did you mean:</span>
+              {suggestions.map((s) => (
+                <button key={s} type="button" className="cf-chip cf-chip-link" onClick={() => setSearch(s)}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <div className="cf-card-list">
           {filtered.map((n) => {
@@ -149,6 +182,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                   </>
                 }
                 meta={<span className="cf-card-submeta">{n.role || n.faction || ""}</span>}
+                matchNote={matchNoteFor(n.id)}
               >
                 <div className="cf-form-grid">
                   <label className="cf-field">
@@ -186,7 +220,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
 
                 <div className="cf-field">
                   <span className="cf-field-label">Tags</span>
-                  <TagInput tags={n.tags} onChange={(tags) => setField(n.id, "tags", tags)} />
+                  <TagInput tags={n.tags} onChange={(tags) => setField(n.id, "tags", tags)} suggestions={allTags} />
                 </div>
 
                 <div className="cf-field">

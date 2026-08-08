@@ -1,5 +1,5 @@
 /** Shared collapsible card shell used by NPC, Location, and Quest cards. */
-export default function EntityCard({ title, meta, badges, expanded, onToggle, onDelete, children, cardRef }) {
+export default function EntityCard({ title, meta, badges, matchNote, expanded, onToggle, onDelete, children, cardRef }) {
   return (
     <div className={`cf-card${expanded ? " cf-card-expanded" : ""}`} ref={cardRef}>
       <div className="cf-card-head" onClick={onToggle}>
@@ -7,6 +7,7 @@ export default function EntityCard({ title, meta, badges, expanded, onToggle, on
           <span className="cf-card-chevron">{expanded ? "▾" : "▸"}</span>
           <span className="cf-card-title">{title || "Untitled"}</span>
           {badges}
+          {matchNote && <span className="cf-match-note">{matchNote}</span>}
         </div>
         <div className="cf-card-head-actions">
           {meta}
