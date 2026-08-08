@@ -41,6 +41,8 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
   }, [focusId]);
 
   const allTags = collectTags(campaign.npcs);
+  const questsForNpc = (npcId) =>
+    campaign.quests.filter((q) => q.giverId === npcId || q.relatedNpcIds.includes(npcId));
 
   const fieldsFor = (n) => [
     { value: n.name, weight: 3, label: "name" },
@@ -50,6 +52,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
     { value: locationName(n.locationId), weight: 1, label: "location" },
     { value: (n.tags || []).join(" "), weight: 2, label: "tags" },
     { value: n.description, weight: 0.5, label: "description" },
+    { value: questsForNpc(n.id).map((q) => q.title).join(" "), weight: 1, label: "quests" },
   ];
 
   const extraFilter = (n) =>
@@ -99,9 +102,6 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
       return c;
     });
   };
-
-  const questsForNpc = (npcId) =>
-    campaign.quests.filter((q) => q.giverId === npcId || q.relatedNpcIds.includes(npcId));
 
   return (
     <div className="cf-panel">
