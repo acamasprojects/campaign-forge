@@ -23,10 +23,15 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
 
   const npcName = (id) => campaign.npcs.find((n) => n.id === id)?.name || null;
   const locationName = (id) => campaign.locations.find((l) => l.id === id)?.name || null;
+  const questsForNpc = (npcId) =>
+    campaign.quests.filter((q) => q.giverId === npcId || q.relatedNpcIds.includes(npcId));
+  const npcsAt = (locId) => campaign.npcs.filter((n) => n.locationId === locId);
+  const questsAt = (locId) => campaign.quests.filter((q) => q.locationId === locId);
+  const relatedNpcNames = (q) => q.relatedNpcIds.map((id) => npcName(id)).filter(Boolean).join(" ");
 
-  // Score every entity across every field it has, same ranking logic the
-  // per-list search uses, so the quick-search actually finds things buried
-  // in a description or a tag — not just an exact name match.
+  // Score every entity across every field it has — including the entities
+  // it's cross-linked to — so a search finds an NPC by a quest they're tied
+  // to, a location by who's stationed there, and vice versa.
   const scored = [
     ...campaign.npcs.map((n) => ({
       type: "npcs",
@@ -41,6 +46,7 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
         { value: locationName(n.locationId), weight: 1, label: "location" },
         { value: (n.tags || []).join(" "), weight: 2, label: "tags" },
         { value: n.description, weight: 0.5, label: "description" },
+        { value: questsForNpc(n.id).map((q) => q.title).join(" "), weight: 1, label: "quests" },
       ]),
     })),
     ...campaign.locations.map((l) => ({
@@ -53,6 +59,8 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
         { value: l.type, weight: 1, label: "type" },
         { value: (l.tags || []).join(" "), weight: 2, label: "tags" },
         { value: l.description, weight: 0.5, label: "description" },
+        { value: npcsAt(l.id).map((n) => n.name).join(" "), weight: 1, label: "NPCs here" },
+        { value: questsAt(l.id).map((q) => q.title).join(" "), weight: 1, label: "quests here" },
       ]),
     })),
     ...campaign.quests.map((qu) => ({
@@ -65,6 +73,7 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
         { value: qu.status, weight: 1, label: "status" },
         { value: npcName(qu.giverId), weight: 1.5, label: "giver" },
         { value: locationName(qu.locationId), weight: 1, label: "location" },
+        { value: relatedNpcNames(qu), weight: 1, label: "related NPCs" },
         { value: (qu.tags || []).join(" "), weight: 2, label: "tags" },
         { value: qu.description, weight: 0.5, label: "description" },
       ]),

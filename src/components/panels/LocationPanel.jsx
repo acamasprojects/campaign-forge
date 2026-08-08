@@ -31,6 +31,9 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
   }, [focusId]);
 
   const allTags = collectTags(campaign.locations);
+  const npcsAt = (locId) => campaign.npcs.filter((n) => n.locationId === locId);
+  const questsAt = (locId) => campaign.quests.filter((q) => q.locationId === locId);
+  const childrenOf = (locId) => campaign.locations.filter((l) => l.parentId === locId);
 
   const fieldsFor = (l) => [
     { value: l.name, weight: 3, label: "name" },
@@ -38,6 +41,9 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
     { value: nameOf(l.parentId), weight: 1, label: "parent location" },
     { value: (l.tags || []).join(" "), weight: 2, label: "tags" },
     { value: l.description, weight: 0.5, label: "description" },
+    { value: npcsAt(l.id).map((n) => n.name).join(" "), weight: 1, label: "NPCs here" },
+    { value: questsAt(l.id).map((q) => q.title).join(" "), weight: 1, label: "quests here" },
+    { value: childrenOf(l.id).map((c) => c.name).join(" "), weight: 0.5, label: "sub-locations" },
   ];
 
   const extraFilter = (l) => (activeTypes.length === 0 || activeTypes.includes(l.type)) && hasAllTags(l.tags, activeTags);
@@ -82,10 +88,6 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
       return c;
     });
   };
-
-  const npcsAt = (locId) => campaign.npcs.filter((n) => n.locationId === locId);
-  const questsAt = (locId) => campaign.quests.filter((q) => q.locationId === locId);
-  const childrenOf = (locId) => campaign.locations.filter((l) => l.parentId === locId);
 
   return (
     <div className="cf-panel">
