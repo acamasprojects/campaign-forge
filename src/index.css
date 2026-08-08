@@ -245,6 +245,13 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
 .cf-modal-title { font-family: var(--font-display); font-size: 17px; color: var(--text-bright); margin: 0; }
 .cf-modal-body { padding: 16px 20px 20px; overflow-y: auto; }
 
+/* ---------- npc relationships ---------- */
+.cf-relationship-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.cf-relationship-row { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+.cf-relationship-row > .cf-link-picker { flex: 1; min-width: 160px; }
+.cf-relationship-label-input { flex: 0 0 150px; padding: 7px 10px; font-size: 12.5px; }
+.cf-relationship-incoming { margin-top: 10px; }
+
 /* ---------- tag browser ---------- */
 .cf-tag-browser-count { font-family: var(--font-mono); font-size: 10px; opacity: 0.7; }
 .cf-tag-browser-groups { display: flex; flex-direction: column; gap: 4px; }
