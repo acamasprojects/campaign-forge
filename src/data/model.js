@@ -2,6 +2,7 @@
 export const uid = () => Math.random().toString(36).slice(2, 10);
 
 export const DISPOSITIONS = ["friendly", "neutral", "hostile", "unknown"];
+export const NPC_STATUSES = ["alive", "missing", "captured", "dead"];
 
 export const LOCATION_TYPES = [
   "region",
@@ -34,14 +35,42 @@ export const emptyNpc = () => ({
   race: "",
   faction: "",
   disposition: "neutral",
+  status: "alive", // story state — alive/missing/captured/dead — separate from disposition (attitude)
   locationId: null,
   tags: [],
   description: "",
   relationships: [], // [{ id, npcId, label }] — directed edge to another NPC (e.g. "rival", "sister")
+  pinned: false,
   createdAt: Date.now(),
 });
 
 export const emptyRelationship = () => ({ id: uid(), npcId: null, label: "" });
+
+export const emptyLocation = () => ({
+  id: uid(),
+  name: "",
+  type: "town",
+  parentId: null,
+  tags: [],
+  description: "",
+  pinned: false,
+  createdAt: Date.now(),
+});
+
+export const emptyQuest = () => ({
+  id: uid(),
+  title: "",
+  status: "not-started",
+  arc: "", // freeform chapter/arc grouping, distinct from tags (one value, not many)
+  giverId: null,
+  locationId: null,
+  relatedNpcIds: [],
+  tags: [],
+  description: "",
+  rewards: "",
+  pinned: false,
+  createdAt: Date.now(),
+});
 
 export const emptySession = (nextNumber) => ({
   id: uid(),
@@ -53,38 +82,21 @@ export const emptySession = (nextNumber) => ({
   relatedLocationIds: [],
   relatedQuestIds: [],
   tags: [],
+  pinned: false,
   createdAt: Date.now(),
 });
 
-/** Backfills arrays introduced after a campaign was first saved, so older
- * localStorage/import data doesn't crash on a missing field. */
+/** Backfills fields introduced after a campaign was first saved, so older
+ * localStorage/import data doesn't crash on or silently lose a new field. */
 export const normalizeCampaign = (c) => ({
   ...c,
-  npcs: (c.npcs || []).map((n) => ({ ...n, relationships: n.relationships || [] })),
-  locations: c.locations || [],
-  quests: c.quests || [],
-  sessions: c.sessions || [],
-});
-
-export const emptyLocation = () => ({
-  id: uid(),
-  name: "",
-  type: "town",
-  parentId: null,
-  tags: [],
-  description: "",
-  createdAt: Date.now(),
-});
-
-export const emptyQuest = () => ({
-  id: uid(),
-  title: "",
-  status: "not-started",
-  giverId: null,
-  locationId: null,
-  relatedNpcIds: [],
-  tags: [],
-  description: "",
-  rewards: "",
-  createdAt: Date.now(),
+  npcs: (c.npcs || []).map((n) => ({
+    ...n,
+    relationships: n.relationships || [],
+    status: n.status || "alive",
+    pinned: n.pinned || false,
+  })),
+  locations: (c.locations || []).map((l) => ({ ...l, pinned: l.pinned || false })),
+  quests: (c.quests || []).map((q) => ({ ...q, arc: q.arc || "", pinned: q.pinned || false })),
+  sessions: (c.sessions || []).map((s) => ({ ...s, pinned: s.pinned || false })),
 });

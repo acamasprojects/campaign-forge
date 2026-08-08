@@ -27,6 +27,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
   const [search, setSearch] = useState("");
   const [activeTypes, setActiveTypes] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
+  const [pinnedOnly, setPinnedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
   const cardRefs = useRef({});
@@ -66,7 +67,8 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
     { value: sessionsAt(l.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
   ];
 
-  const extraFilter = (l) => (activeTypes.length === 0 || activeTypes.includes(l.type)) && hasAllTags(l.tags, activeTags);
+  const extraFilter = (l) =>
+    (activeTypes.length === 0 || activeTypes.includes(l.type)) && (!pinnedOnly || l.pinned) && hasAllTags(l.tags, activeTags);
 
   const results = searchAndFilter(campaign.locations, { search, fieldsFn: fieldsFor, extraFilter });
   const filtered = SORT_COMPARATORS[sortMode]
@@ -125,10 +127,12 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
         onSearch={setSearch}
         resultCount={filtered.length}
         sort={{ value: sortMode, options: SORT_OPTIONS, onChange: setSortMode }}
+        pinnedOnly={{ active: pinnedOnly, onChange: setPinnedOnly }}
         onClearAll={() => {
           setSearch("");
           setActiveTypes([]);
           setActiveTags([]);
+          setPinnedOnly(false);
         }}
         groups={[
           { label: "Type", values: LOCATION_TYPES, active: activeTypes, setActive: setActiveTypes },
@@ -173,6 +177,8 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
                 onDelete={() => {
                   if (confirm(`Delete location "${l.name || "Untitled"}"?`)) removeLocation(l.id);
                 }}
+                pinned={l.pinned}
+                onTogglePin={() => setField(l.id, "pinned", !l.pinned)}
                 badges={
                   <>
                     <span className="cf-badge">{l.type}</span>

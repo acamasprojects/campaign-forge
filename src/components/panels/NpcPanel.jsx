@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { emptyNpc, emptyRelationship, DISPOSITIONS } from "../../data/model.js";
+import { emptyNpc, emptyRelationship, DISPOSITIONS, NPC_STATUSES } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
 import FilterBar from "../FilterBar.jsx";
@@ -12,6 +12,13 @@ const DISPOSITION_COLOR = {
   neutral: "#C9A227",
   hostile: "#A33D2C",
   unknown: "#8A8172",
+};
+
+const NPC_STATUS_COLOR = {
+  alive: "#5A8F5A",
+  missing: "#C9A227",
+  captured: "#8A6FB0",
+  dead: "#A33D2C",
 };
 
 const SORT_OPTIONS = [
@@ -33,8 +40,10 @@ const SORT_COMPARATORS = {
 export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFocus, onNavigate }) {
   const [search, setSearch] = useState("");
   const [activeDispositions, setActiveDispositions] = useState([]);
+  const [activeStatuses, setActiveStatuses] = useState([]);
   const [activeLocations, setActiveLocations] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
+  const [pinnedOnly, setPinnedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
   const cardRefs = useRef({});
@@ -78,6 +87,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
     { value: locationName(n.locationId), weight: 1, label: "location" },
     { value: (n.tags || []).join(" "), weight: 2, label: "tags" },
     { value: n.description, weight: 0.5, label: "description" },
+    { value: n.status, weight: 1, label: "status" },
     { value: questsForNpc(n.id).map((q) => q.title).join(" "), weight: 1, label: "quests" },
     {
       value: [
@@ -94,7 +104,9 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
 
   const extraFilter = (n) =>
     (activeDispositions.length === 0 || activeDispositions.includes(n.disposition)) &&
+    (activeStatuses.length === 0 || activeStatuses.includes(n.status)) &&
     (activeLocations.length === 0 || activeLocations.includes(n.locationId)) &&
+    (!pinnedOnly || n.pinned) &&
     hasAllTags(n.tags, activeTags);
 
   const results = searchAndFilter(campaign.npcs, { search, fieldsFn: fieldsFor, extraFilter });
@@ -177,11 +189,14 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
         onSearch={setSearch}
         resultCount={filtered.length}
         sort={{ value: sortMode, options: SORT_OPTIONS, onChange: setSortMode }}
+        pinnedOnly={{ active: pinnedOnly, onChange: setPinnedOnly }}
         onClearAll={() => {
           setSearch("");
           setActiveDispositions([]);
+          setActiveStatuses([]);
           setActiveLocations([]);
           setActiveTags([]);
+          setPinnedOnly(false);
         }}
         groups={[
           {
@@ -189,6 +204,12 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
             values: DISPOSITIONS,
             active: activeDispositions,
             setActive: setActiveDispositions,
+          },
+          {
+            label: "Status",
+            values: NPC_STATUSES,
+            active: activeStatuses,
+            setActive: setActiveStatuses,
           },
           {
             label: "Location",
@@ -237,11 +258,18 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                 onDelete={() => {
                   if (confirm(`Delete NPC "${n.name || "Untitled"}"?`)) removeNpc(n.id);
                 }}
+                pinned={n.pinned}
+                onTogglePin={() => setField(n.id, "pinned", !n.pinned)}
                 badges={
                   <>
                     <span className="cf-badge" style={{ color: DISPOSITION_COLOR[n.disposition], borderColor: DISPOSITION_COLOR[n.disposition] }}>
                       {n.disposition}
                     </span>
+                    {n.status !== "alive" && (
+                      <span className="cf-badge" style={{ color: NPC_STATUS_COLOR[n.status], borderColor: NPC_STATUS_COLOR[n.status] }}>
+                        {n.status}
+                      </span>
+                    )}
                     {n.locationId && locationName(n.locationId) && (
                       <span className="cf-badge cf-badge-muted">{locationName(n.locationId)}</span>
                     )}
@@ -269,9 +297,15 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                   </label>
                 </div>
 
-                <div className="cf-field">
-                  <span className="cf-field-label">Disposition</span>
-                  <ChoiceChips values={DISPOSITIONS} value={n.disposition} onChange={(v) => setField(n.id, "disposition", v)} />
+                <div className="cf-form-grid">
+                  <div className="cf-field">
+                    <span className="cf-field-label">Disposition</span>
+                    <ChoiceChips values={DISPOSITIONS} value={n.disposition} onChange={(v) => setField(n.id, "disposition", v)} />
+                  </div>
+                  <div className="cf-field">
+                    <span className="cf-field-label">Status</span>
+                    <ChoiceChips values={NPC_STATUSES} value={n.status} onChange={(v) => setField(n.id, "status", v)} />
+                  </div>
                 </div>
 
                 <div className="cf-field">

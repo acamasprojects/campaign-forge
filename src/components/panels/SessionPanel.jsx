@@ -25,6 +25,7 @@ const SORT_COMPARATORS = {
 export default function SessionPanel({ campaign, update, flash, focusId, onConsumeFocus, onNavigate }) {
   const [search, setSearch] = useState("");
   const [activeTags, setActiveTags] = useState([]);
+  const [pinnedOnly, setPinnedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("number-desc");
   const [expandedId, setExpandedId] = useState(null);
   const cardRefs = useRef({});
@@ -60,7 +61,7 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
     { value: namesOf(questOptions, s.relatedQuestIds), weight: 1, label: "quests" },
   ];
 
-  const extraFilter = (s) => hasAllTags(s.tags, activeTags);
+  const extraFilter = (s) => (!pinnedOnly || s.pinned) && hasAllTags(s.tags, activeTags);
 
   const results = searchAndFilter(campaign.sessions, { search, fieldsFn: fieldsFor, extraFilter });
   const filtered = SORT_COMPARATORS[sortMode]
@@ -117,9 +118,11 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
         onSearch={setSearch}
         resultCount={filtered.length}
         sort={{ value: sortMode, options: SORT_OPTIONS, onChange: setSortMode }}
+        pinnedOnly={{ active: pinnedOnly, onChange: setPinnedOnly }}
         onClearAll={() => {
           setSearch("");
           setActiveTags([]);
+          setPinnedOnly(false);
         }}
         groups={[{ label: "Tags", values: allTags, active: activeTags, setActive: setActiveTags }]}
       />
@@ -154,6 +157,8 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
                 onDelete={() => {
                   if (confirm(`Delete Session ${s.sessionNumber}?`)) removeSession(s.id);
                 }}
+                pinned={s.pinned}
+                onTogglePin={() => setField(s.id, "pinned", !s.pinned)}
                 badges={<span className="cf-badge cf-badge-muted">{s.date}</span>}
                 matchNote={matchNoteFor(s.id)}
               >
