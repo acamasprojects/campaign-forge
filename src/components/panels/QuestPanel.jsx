@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { emptyQuest, QUEST_STATUSES } from "../../data/model.js";
-import { textMatches, hasAllTags, collectTags } from "../../utils/search.js";
+import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
 import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
@@ -43,23 +43,37 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
   }, [focusId]);
 
   const allTags = collectTags(campaign.quests);
+  const relatedNpcNames = (q) => q.relatedNpcIds.map((id) => npcName(id)).filter(Boolean).join(" ");
 
-  const filtered = campaign.quests.filter(
-    (q) =>
-      textMatches(
-        search,
-        q.title,
-        q.status,
-        npcName(q.giverId),
-        locationName(q.locationId),
-        q.description,
-        q.rewards,
-        (q.tags || []).join(" ")
-      ) &&
-      (activeStatuses.length === 0 || activeStatuses.includes(q.status)) &&
-      (activeLocations.length === 0 || activeLocations.includes(q.locationId)) &&
-      hasAllTags(q.tags, activeTags)
-  );
+  const fieldsFor = (q) => [
+    { value: q.title, weight: 3, label: "title" },
+    { value: q.status, weight: 1, label: "status" },
+    { value: npcName(q.giverId), weight: 1.5, label: "giver" },
+    { value: locationName(q.locationId), weight: 1, label: "location" },
+    { value: relatedNpcNames(q), weight: 1, label: "related NPCs" },
+    { value: (q.tags || []).join(" "), weight: 2, label: "tags" },
+    { value: q.rewards, weight: 0.5, label: "rewards" },
+    { value: q.description, weight: 0.5, label: "description" },
+  ];
+
+  const extraFilter = (q) =>
+    (activeStatuses.length === 0 || activeStatuses.includes(q.status)) &&
+    (activeLocations.length === 0 || activeLocations.includes(q.locationId)) &&
+    hasAllTags(q.tags, activeTags);
+
+  const results = searchAndFilter(campaign.quests, { search, fieldsFn: fieldsFor, extraFilter });
+  const filtered = results.map((r) => r.item);
+  const matchNoteFor = (id) => {
+    const r = results.find((x) => x.item.id === id);
+    if (!search.trim() || !r || r.matchedFields.length === 0) return null;
+    if (r.matchedFields.length === 1 && r.matchedFields[0] === "title") return null;
+    return `matched: ${r.matchedFields.join(", ")}`;
+  };
+
+  const suggestions =
+    filtered.length === 0 && search.trim() && campaign.quests.length > 0
+      ? suggestClosest(search, [...campaign.quests.map((q) => q.title), ...allTags])
+      : [];
 
   const addQuest = () => {
     const q = emptyQuest();
@@ -120,7 +134,19 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
       {campaign.quests.length === 0 ? (
         <div className="cf-empty-panel">No quests logged yet. Add one to start tracking the party's threads.</div>
       ) : filtered.length === 0 ? (
-        <div className="cf-empty-panel">No quests match the current filters.</div>
+        <div className="cf-empty-panel">
+          No quests match the current filters.
+          {suggestions.length > 0 && (
+            <div className="cf-suggestions">
+              <span className="cf-suggestions-label">Did you mean:</span>
+              {suggestions.map((s) => (
+                <button key={s} type="button" className="cf-chip cf-chip-link" onClick={() => setSearch(s)}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <div className="cf-card-list">
           {filtered.map((q) => {
@@ -141,6 +167,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
                   </span>
                 }
                 meta={<span className="cf-card-submeta">{locationName(q.locationId) || ""}</span>}
+                matchNote={matchNoteFor(q.id)}
               >
                 <div className="cf-form-grid">
                   <label className="cf-field cf-field-wide">
@@ -178,7 +205,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
 
                 <div className="cf-field">
                   <span className="cf-field-label">Tags</span>
-                  <TagInput tags={q.tags} onChange={(tags) => setField(q.id, "tags", tags)} />
+                  <TagInput tags={q.tags} onChange={(tags) => setField(q.id, "tags", tags)} suggestions={allTags} />
                 </div>
 
                 <div className="cf-field">
