@@ -14,11 +14,28 @@ const DISPOSITION_COLOR = {
   unknown: "#8A8172",
 };
 
+const SORT_OPTIONS = [
+  { value: "relevance", label: "Relevance" },
+  { value: "name-asc", label: "Name (A–Z)" },
+  { value: "name-desc", label: "Name (Z–A)" },
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "disposition", label: "Disposition" },
+];
+const SORT_COMPARATORS = {
+  "name-asc": (a, b) => (a.name || "").localeCompare(b.name || ""),
+  "name-desc": (a, b) => (b.name || "").localeCompare(a.name || ""),
+  newest: (a, b) => b.createdAt - a.createdAt,
+  oldest: (a, b) => a.createdAt - b.createdAt,
+  disposition: (a, b) => DISPOSITIONS.indexOf(a.disposition) - DISPOSITIONS.indexOf(b.disposition),
+};
+
 export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFocus, onNavigate }) {
   const [search, setSearch] = useState("");
   const [activeDispositions, setActiveDispositions] = useState([]);
   const [activeLocations, setActiveLocations] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
+  const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
   const cardRefs = useRef({});
 
@@ -61,7 +78,9 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
     hasAllTags(n.tags, activeTags);
 
   const results = searchAndFilter(campaign.npcs, { search, fieldsFn: fieldsFor, extraFilter });
-  const filtered = results.map((r) => r.item);
+  const filtered = SORT_COMPARATORS[sortMode]
+    ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
+    : results.map((r) => r.item);
   const matchNoteFor = (id) => {
     const r = results.find((x) => x.item.id === id);
     if (!search.trim() || !r || r.matchedFields.length === 0) return null;
@@ -116,6 +135,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
         search={search}
         onSearch={setSearch}
         resultCount={filtered.length}
+        sort={{ value: sortMode, options: SORT_OPTIONS, onChange: setSortMode }}
         onClearAll={() => {
           setSearch("");
           setActiveDispositions([]);

@@ -14,11 +14,28 @@ const STATUS_COLOR = {
   failed: "#A33D2C",
 };
 
+const SORT_OPTIONS = [
+  { value: "relevance", label: "Relevance" },
+  { value: "name-asc", label: "Title (A–Z)" },
+  { value: "name-desc", label: "Title (Z–A)" },
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "status", label: "Status" },
+];
+const SORT_COMPARATORS = {
+  "name-asc": (a, b) => (a.title || "").localeCompare(b.title || ""),
+  "name-desc": (a, b) => (b.title || "").localeCompare(a.title || ""),
+  newest: (a, b) => b.createdAt - a.createdAt,
+  oldest: (a, b) => a.createdAt - b.createdAt,
+  status: (a, b) => QUEST_STATUSES.indexOf(a.status) - QUEST_STATUSES.indexOf(b.status),
+};
+
 export default function QuestPanel({ campaign, update, flash, focusId, onConsumeFocus, onNavigate }) {
   const [search, setSearch] = useState("");
   const [activeStatuses, setActiveStatuses] = useState([]);
   const [activeLocations, setActiveLocations] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
+  const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
   const cardRefs = useRef({});
 
@@ -62,7 +79,9 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
     hasAllTags(q.tags, activeTags);
 
   const results = searchAndFilter(campaign.quests, { search, fieldsFn: fieldsFor, extraFilter });
-  const filtered = results.map((r) => r.item);
+  const filtered = SORT_COMPARATORS[sortMode]
+    ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
+    : results.map((r) => r.item);
   const matchNoteFor = (id) => {
     const r = results.find((x) => x.item.id === id);
     if (!search.trim() || !r || r.matchedFields.length === 0) return null;
@@ -112,6 +131,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
         search={search}
         onSearch={setSearch}
         resultCount={filtered.length}
+        sort={{ value: sortMode, options: SORT_OPTIONS, onChange: setSortMode }}
         onClearAll={() => {
           setSearch("");
           setActiveStatuses([]);

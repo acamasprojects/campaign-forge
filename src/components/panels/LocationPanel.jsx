@@ -7,10 +7,27 @@ import TagInput from "../TagInput.jsx";
 import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
 
+const SORT_OPTIONS = [
+  { value: "relevance", label: "Relevance" },
+  { value: "name-asc", label: "Name (A–Z)" },
+  { value: "name-desc", label: "Name (Z–A)" },
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "type", label: "Type" },
+];
+const SORT_COMPARATORS = {
+  "name-asc": (a, b) => (a.name || "").localeCompare(b.name || ""),
+  "name-desc": (a, b) => (b.name || "").localeCompare(a.name || ""),
+  newest: (a, b) => b.createdAt - a.createdAt,
+  oldest: (a, b) => a.createdAt - b.createdAt,
+  type: (a, b) => LOCATION_TYPES.indexOf(a.type) - LOCATION_TYPES.indexOf(b.type),
+};
+
 export default function LocationPanel({ campaign, update, flash, focusId, onConsumeFocus, onNavigate }) {
   const [search, setSearch] = useState("");
   const [activeTypes, setActiveTypes] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
+  const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
   const cardRefs = useRef({});
 
@@ -49,7 +66,9 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
   const extraFilter = (l) => (activeTypes.length === 0 || activeTypes.includes(l.type)) && hasAllTags(l.tags, activeTags);
 
   const results = searchAndFilter(campaign.locations, { search, fieldsFn: fieldsFor, extraFilter });
-  const filtered = results.map((r) => r.item);
+  const filtered = SORT_COMPARATORS[sortMode]
+    ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
+    : results.map((r) => r.item);
   const matchNoteFor = (id) => {
     const r = results.find((x) => x.item.id === id);
     if (!search.trim() || !r || r.matchedFields.length === 0) return null;
@@ -102,6 +121,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
         search={search}
         onSearch={setSearch}
         resultCount={filtered.length}
+        sort={{ value: sortMode, options: SORT_OPTIONS, onChange: setSortMode }}
         onClearAll={() => {
           setSearch("");
           setActiveTypes([]);
