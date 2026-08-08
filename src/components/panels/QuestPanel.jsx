@@ -61,6 +61,8 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
 
   const allTags = collectTags(campaign.quests);
   const relatedNpcNames = (q) => q.relatedNpcIds.map((id) => npcName(id)).filter(Boolean).join(" ");
+  const sessionsForQuest = (questId) => campaign.sessions.filter((s) => s.relatedQuestIds.includes(questId));
+  const sessionLabel = (s) => `Session ${s.sessionNumber}${s.title ? `: ${s.title}` : ""}`;
 
   const fieldsFor = (q) => [
     { value: q.title, weight: 3, label: "title" },
@@ -71,6 +73,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
     { value: (q.tags || []).join(" "), weight: 2, label: "tags" },
     { value: q.rewards, weight: 0.5, label: "rewards" },
     { value: q.description, weight: 0.5, label: "description" },
+    { value: sessionsForQuest(q.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
   ];
 
   const extraFilter = (q) =>
@@ -171,6 +174,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
         <div className="cf-card-list">
           {filtered.map((q) => {
             const expanded = expandedId === q.id;
+            const linkedSessions = sessionsForQuest(q.id);
             return (
               <EntityCard
                 key={q.id}
@@ -255,6 +259,19 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
                           {locationName(q.locationId)}
                         </button>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {linkedSessions.length > 0 && (
+                  <div className="cf-field">
+                    <span className="cf-field-label">Mentioned in sessions</span>
+                    <div className="cf-chip-row">
+                      {linkedSessions.map((s) => (
+                        <button key={s.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("sessions", s.id)}>
+                          {sessionLabel(s)}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}

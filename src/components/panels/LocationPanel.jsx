@@ -51,6 +51,8 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
   const npcsAt = (locId) => campaign.npcs.filter((n) => n.locationId === locId);
   const questsAt = (locId) => campaign.quests.filter((q) => q.locationId === locId);
   const childrenOf = (locId) => campaign.locations.filter((l) => l.parentId === locId);
+  const sessionsAt = (locId) => campaign.sessions.filter((s) => s.relatedLocationIds.includes(locId));
+  const sessionLabel = (s) => `Session ${s.sessionNumber}${s.title ? `: ${s.title}` : ""}`;
 
   const fieldsFor = (l) => [
     { value: l.name, weight: 3, label: "name" },
@@ -61,6 +63,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
     { value: npcsAt(l.id).map((n) => n.name).join(" "), weight: 1, label: "NPCs here" },
     { value: questsAt(l.id).map((q) => q.title).join(" "), weight: 1, label: "quests here" },
     { value: childrenOf(l.id).map((c) => c.name).join(" "), weight: 0.5, label: "sub-locations" },
+    { value: sessionsAt(l.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
   ];
 
   const extraFilter = (l) => (activeTypes.length === 0 || activeTypes.includes(l.type)) && hasAllTags(l.tags, activeTags);
@@ -156,6 +159,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
             const npcs = npcsAt(l.id);
             const quests = questsAt(l.id);
             const children = childrenOf(l.id);
+            const sessions = sessionsAt(l.id);
             const locationOptions = campaign.locations
               .filter((o) => o.id !== l.id)
               .map((o) => ({ id: o.id, label: o.name || "Untitled" }));
@@ -248,6 +252,19 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
                       {quests.map((q) => (
                         <button key={q.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("quests", q.id)}>
                           {q.title || "Untitled quest"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {sessions.length > 0 && (
+                  <div className="cf-field">
+                    <span className="cf-field-label">Mentioned in sessions</span>
+                    <div className="cf-chip-row">
+                      {sessions.map((s) => (
+                        <button key={s.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("sessions", s.id)}>
+                          {sessionLabel(s)}
                         </button>
                       ))}
                     </div>
