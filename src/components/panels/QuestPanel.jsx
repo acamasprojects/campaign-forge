@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { emptyQuest, QUEST_STATUSES } from "../../data/model.js";
+import { emptyQuest, emptyClue, QUEST_STATUSES } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
 import FilterBar from "../FilterBar.jsx";
@@ -36,6 +36,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
   const [activeLocations, setActiveLocations] = useState([]);
   const [activeArcs, setActiveArcs] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
+  const [activeClueFilter, setActiveClueFilter] = useState([]);
   const [pinnedOnly, setPinnedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
@@ -43,8 +44,10 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
 
   const npcOptions = campaign.npcs.map((n) => ({ id: n.id, label: n.name || "Untitled" }));
   const locationOptions = campaign.locations.map((l) => ({ id: l.id, label: l.name || "Untitled" }));
+  const pcOptions = campaign.pcs.map((p) => ({ id: p.id, label: p.name || "Untitled" }));
   const npcName = (id) => campaign.npcs.find((n) => n.id === id)?.name || null;
   const locationName = (id) => campaign.locations.find((l) => l.id === id)?.name || null;
+  const pcName = (id) => campaign.pcs.find((p) => p.id === id)?.name || null;
 
   useEffect(() => {
     if (!focusId) return;
@@ -64,6 +67,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
   const allTags = collectTags(campaign.quests);
   const allArcs = Array.from(new Set(campaign.quests.map((q) => q.arc).filter(Boolean))).sort((a, b) => a.localeCompare(b));
   const relatedNpcNames = (q) => q.relatedNpcIds.map((id) => npcName(id)).filter(Boolean).join(" ");
+  const relatedPcNames = (q) => q.relatedPcIds.map((id) => pcName(id)).filter(Boolean).join(" ");
   const sessionsForQuest = (questId) => campaign.sessions.filter((s) => s.relatedQuestIds.includes(questId));
   const sessionLabel = (s) => `Session ${s.sessionNumber}${s.title ? `: ${s.title}` : ""}`;
 
@@ -74,16 +78,19 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
     { value: npcName(q.giverId), weight: 1.5, label: "giver" },
     { value: locationName(q.locationId), weight: 1, label: "location" },
     { value: relatedNpcNames(q), weight: 1, label: "related NPCs" },
+    { value: relatedPcNames(q), weight: 1, label: "related PCs" },
     { value: (q.tags || []).join(" "), weight: 2, label: "tags" },
     { value: q.rewards, weight: 0.5, label: "rewards" },
     { value: q.description, weight: 0.5, label: "description" },
     { value: sessionsForQuest(q.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
+    { value: (q.clues || []).map((c) => c.text).join(" "), weight: 0.5, label: "clues" },
   ];
 
   const extraFilter = (q) =>
     (activeStatuses.length === 0 || activeStatuses.includes(q.status)) &&
     (activeLocations.length === 0 || activeLocations.includes(q.locationId)) &&
     (activeArcs.length === 0 || activeArcs.includes(q.arc)) &&
+    (activeClueFilter.length === 0 || (q.clues || []).some((c) => !c.revealed)) &&
     (!pinnedOnly || q.pinned) &&
     hasAllTags(q.tags, activeTags);
 
@@ -127,6 +134,25 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
     });
   };
 
+  const addClue = (questId) => {
+    const q = campaign.quests.find((x) => x.id === questId);
+    setField(questId, "clues", [...(q.clues || []), emptyClue()]);
+  };
+
+  const setClueField = (questId, clueId, field, value) => {
+    const q = campaign.quests.find((x) => x.id === questId);
+    setField(
+      questId,
+      "clues",
+      (q.clues || []).map((c) => (c.id === clueId ? { ...c, [field]: value } : c))
+    );
+  };
+
+  const removeClue = (questId, clueId) => {
+    const q = campaign.quests.find((x) => x.id === questId);
+    setField(questId, "clues", (q.clues || []).filter((c) => c.id !== clueId));
+  };
+
   return (
     <div className="cf-panel">
       <div className="cf-panel-head-row">
@@ -154,6 +180,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
           setActiveLocations([]);
           setActiveArcs([]);
           setActiveTags([]);
+          setActiveClueFilter([]);
           setPinnedOnly(false);
         }}
         groups={[
@@ -167,6 +194,13 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
             formatLabel: (id) => locationName(id) || "Untitled",
           },
           { label: "Tags", values: allTags, active: activeTags, setActive: setActiveTags },
+          {
+            label: "Clues",
+            values: ["pending"],
+            active: activeClueFilter,
+            setActive: setActiveClueFilter,
+            formatLabel: () => "Has hidden clues",
+          },
         ]}
       />
 
@@ -248,15 +282,57 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
                   </div>
                 </div>
 
+                <div className="cf-form-grid">
+                  <div className="cf-field">
+                    <span className="cf-field-label">Related NPCs</span>
+                    <LinkPicker
+                      options={npcOptions}
+                      selected={q.relatedNpcIds}
+                      onChange={(ids) => setField(q.id, "relatedNpcIds", ids)}
+                      multiple
+                      placeholder="Add related NPCs…"
+                    />
+                  </div>
+                  <div className="cf-field">
+                    <span className="cf-field-label">Related PCs</span>
+                    <LinkPicker
+                      options={pcOptions}
+                      selected={q.relatedPcIds}
+                      onChange={(ids) => setField(q.id, "relatedPcIds", ids)}
+                      multiple
+                      placeholder="Personal for…"
+                    />
+                  </div>
+                </div>
+
                 <div className="cf-field">
-                  <span className="cf-field-label">Related NPCs</span>
-                  <LinkPicker
-                    options={npcOptions}
-                    selected={q.relatedNpcIds}
-                    onChange={(ids) => setField(q.id, "relatedNpcIds", ids)}
-                    multiple
-                    placeholder="Add related NPCs…"
-                  />
+                  <span className="cf-field-label">Secrets &amp; clues</span>
+                  <div className="cf-clue-list">
+                    {(q.clues || []).map((c) => (
+                      <div className="cf-clue-row" key={c.id}>
+                        <input
+                          className="cf-input cf-clue-text-input"
+                          value={c.text}
+                          placeholder="A torn letter mentions a second key…"
+                          onChange={(e) => setClueField(q.id, c.id, "text", e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className={`cf-chip cf-clue-toggle${c.revealed ? " cf-clue-revealed" : ""}`}
+                          onClick={() => setClueField(q.id, c.id, "revealed", !c.revealed)}
+                          title="Toggle revealed / hidden"
+                        >
+                          {c.revealed ? "Revealed" : "Hidden"}
+                        </button>
+                        <button type="button" className="cf-delete-btn" onClick={() => removeClue(q.id, c.id)} title="Remove clue">
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" className="cf-btn cf-btn-ghost cf-btn-small" onClick={() => addClue(q.id)}>
+                    + Add clue
+                  </button>
                 </div>
 
                 <div className="cf-field">

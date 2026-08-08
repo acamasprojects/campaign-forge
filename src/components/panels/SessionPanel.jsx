@@ -33,6 +33,7 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
   const npcOptions = campaign.npcs.map((n) => ({ id: n.id, label: n.name || "Untitled" }));
   const locationOptions = campaign.locations.map((l) => ({ id: l.id, label: l.name || "Untitled" }));
   const questOptions = campaign.quests.map((q) => ({ id: q.id, label: q.title || "Untitled" }));
+  const pcOptions = campaign.pcs.map((p) => ({ id: p.id, label: p.name || "Untitled" }));
   const namesOf = (options, ids) => ids.map((id) => options.find((o) => o.id === id)?.label).filter(Boolean).join(" ");
 
   useEffect(() => {
@@ -59,6 +60,7 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
     { value: namesOf(npcOptions, s.relatedNpcIds), weight: 1, label: "NPCs" },
     { value: namesOf(locationOptions, s.relatedLocationIds), weight: 1, label: "locations" },
     { value: namesOf(questOptions, s.relatedQuestIds), weight: 1, label: "quests" },
+    { value: namesOf(pcOptions, s.relatedPcIds), weight: 1, label: "PCs" },
   ];
 
   const extraFilter = (s) => (!pinnedOnly || s.pinned) && hasAllTags(s.tags, activeTags);
@@ -226,15 +228,27 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
                   </div>
                 </div>
 
-                <div className="cf-field">
-                  <span className="cf-field-label">Quests touched</span>
-                  <LinkPicker
-                    options={questOptions}
-                    selected={s.relatedQuestIds}
-                    onChange={(ids) => setField(s.id, "relatedQuestIds", ids)}
-                    multiple
-                    placeholder="Add a quest…"
-                  />
+                <div className="cf-form-grid">
+                  <div className="cf-field">
+                    <span className="cf-field-label">Quests touched</span>
+                    <LinkPicker
+                      options={questOptions}
+                      selected={s.relatedQuestIds}
+                      onChange={(ids) => setField(s.id, "relatedQuestIds", ids)}
+                      multiple
+                      placeholder="Add a quest…"
+                    />
+                  </div>
+                  <div className="cf-field">
+                    <span className="cf-field-label">PCs present</span>
+                    <LinkPicker
+                      options={pcOptions}
+                      selected={s.relatedPcIds}
+                      onChange={(ids) => setField(s.id, "relatedPcIds", ids)}
+                      multiple
+                      placeholder="Add a PC…"
+                    />
+                  </div>
                 </div>
               </EntityCard>
             );

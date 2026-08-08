@@ -4,6 +4,8 @@ import Sidebar from "./components/Sidebar.jsx";
 import TopBar from "./components/TopBar.jsx";
 import TagManagerModal from "./components/TagManagerModal.jsx";
 import NpcPanel from "./components/panels/NpcPanel.jsx";
+import PcPanel from "./components/panels/PcPanel.jsx";
+import FactionPanel from "./components/panels/FactionPanel.jsx";
 import LocationPanel from "./components/panels/LocationPanel.jsx";
 import QuestPanel from "./components/panels/QuestPanel.jsx";
 import SessionPanel from "./components/panels/SessionPanel.jsx";
@@ -95,6 +97,26 @@ export default function App() {
                   update={store.updateCurrent}
                   flash={flash}
                   focusId={focus?.type === "npcs" ? focus.id : null}
+                  onConsumeFocus={() => setFocus(null)}
+                  onNavigate={onNavigate}
+                />
+              )}
+              {tab === "pcs" && (
+                <PcPanel
+                  campaign={store.current}
+                  update={store.updateCurrent}
+                  flash={flash}
+                  focusId={focus?.type === "pcs" ? focus.id : null}
+                  onConsumeFocus={() => setFocus(null)}
+                  onNavigate={onNavigate}
+                />
+              )}
+              {tab === "factions" && (
+                <FactionPanel
+                  campaign={store.current}
+                  update={store.updateCurrent}
+                  flash={flash}
+                  focusId={focus?.type === "factions" ? focus.id : null}
                   onConsumeFocus={() => setFocus(null)}
                   onNavigate={onNavigate}
                 />

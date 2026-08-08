@@ -54,6 +54,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
   const childrenOf = (locId) => campaign.locations.filter((l) => l.parentId === locId);
   const sessionsAt = (locId) => campaign.sessions.filter((s) => s.relatedLocationIds.includes(locId));
   const sessionLabel = (s) => `Session ${s.sessionNumber}${s.title ? `: ${s.title}` : ""}`;
+  const pcsFrom = (locId) => campaign.pcs.filter((p) => p.hometownLocationId === locId);
 
   const fieldsFor = (l) => [
     { value: l.name, weight: 3, label: "name" },
@@ -65,6 +66,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
     { value: questsAt(l.id).map((q) => q.title).join(" "), weight: 1, label: "quests here" },
     { value: childrenOf(l.id).map((c) => c.name).join(" "), weight: 0.5, label: "sub-locations" },
     { value: sessionsAt(l.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
+    { value: pcsFrom(l.id).map((p) => p.name).join(" "), weight: 1, label: "PCs from here" },
   ];
 
   const extraFilter = (l) =>
@@ -109,6 +111,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
       c.locations = c.locations.map((l) => (l.parentId === id ? { ...l, parentId: null } : l));
       c.npcs = c.npcs.map((n) => (n.locationId === id ? { ...n, locationId: null } : n));
       c.quests = c.quests.map((q) => (q.locationId === id ? { ...q, locationId: null } : q));
+      c.pcs = c.pcs.map((p) => (p.hometownLocationId === id ? { ...p, hometownLocationId: null } : p));
       return c;
     });
   };
@@ -164,6 +167,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
             const quests = questsAt(l.id);
             const children = childrenOf(l.id);
             const sessions = sessionsAt(l.id);
+            const pcs = pcsFrom(l.id);
             const locationOptions = campaign.locations
               .filter((o) => o.id !== l.id)
               .map((o) => ({ id: o.id, label: o.name || "Untitled" }));
@@ -271,6 +275,19 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
                       {sessions.map((s) => (
                         <button key={s.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("sessions", s.id)}>
                           {sessionLabel(s)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {pcs.length > 0 && (
+                  <div className="cf-field">
+                    <span className="cf-field-label">PCs from here</span>
+                    <div className="cf-chip-row">
+                      {pcs.map((p) => (
+                        <button key={p.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("pcs", p.id)}>
+                          {p.name || "Untitled"}
                         </button>
                       ))}
                     </div>
