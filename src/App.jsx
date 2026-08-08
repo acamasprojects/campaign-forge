@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCampaignStore } from "./hooks/useCampaignStore.js";
 import Sidebar from "./components/Sidebar.jsx";
 import TopBar from "./components/TopBar.jsx";
+import TagManagerModal from "./components/TagManagerModal.jsx";
 import NpcPanel from "./components/panels/NpcPanel.jsx";
 import LocationPanel from "./components/panels/LocationPanel.jsx";
 import QuestPanel from "./components/panels/QuestPanel.jsx";
@@ -12,6 +13,7 @@ export default function App() {
   const [tab, setTab] = useState("npcs");
   const [toast, setToast] = useState(null);
   const [focus, setFocus] = useState(null); // { type, id } | null
+  const [tagManagerOpen, setTagManagerOpen] = useState(false);
 
   const flash = (msg) => {
     setToast(msg);
@@ -74,6 +76,7 @@ export default function App() {
         renameCampaign={store.renameCampaign}
         onExportAll={exportAll}
         onImportAll={importAll}
+        onManageTags={() => setTagManagerOpen(true)}
       />
       <main className="cf-main">
         {!store.current ? (
@@ -117,6 +120,14 @@ export default function App() {
         )}
       </main>
       {toast && <div className="cf-toast">{toast}</div>}
+      {tagManagerOpen && store.current && (
+        <TagManagerModal
+          campaign={store.current}
+          update={store.updateCurrent}
+          flash={flash}
+          onClose={() => setTagManagerOpen(false)}
+        />
+      )}
     </div>
   );
 }
