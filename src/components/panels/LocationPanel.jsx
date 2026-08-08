@@ -112,6 +112,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
       c.npcs = c.npcs.map((n) => (n.locationId === id ? { ...n, locationId: null } : n));
       c.quests = c.quests.map((q) => (q.locationId === id ? { ...q, locationId: null } : q));
       c.pcs = c.pcs.map((p) => (p.hometownLocationId === id ? { ...p, hometownLocationId: null } : p));
+      c.items = c.items.map((i) => (i.locationId === id ? { ...i, locationId: null } : i));
       return c;
     });
   };

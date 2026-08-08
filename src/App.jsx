@@ -8,6 +8,7 @@ import NpcPanel from "./components/panels/NpcPanel.jsx";
 import PcPanel from "./components/panels/PcPanel.jsx";
 import FactionPanel from "./components/panels/FactionPanel.jsx";
 import LocationPanel from "./components/panels/LocationPanel.jsx";
+import ItemPanel from "./components/panels/ItemPanel.jsx";
 import QuestPanel from "./components/panels/QuestPanel.jsx";
 import SessionPanel from "./components/panels/SessionPanel.jsx";
 import TagBrowserPanel from "./components/panels/TagBrowserPanel.jsx";
@@ -136,6 +137,16 @@ export default function App() {
                   update={store.updateCurrent}
                   flash={flash}
                   focusId={focus?.type === "locations" ? focus.id : null}
+                  onConsumeFocus={() => setFocus(null)}
+                  onNavigate={onNavigate}
+                />
+              )}
+              {tab === "items" && (
+                <ItemPanel
+                  campaign={store.current}
+                  update={store.updateCurrent}
+                  flash={flash}
+                  focusId={focus?.type === "items" ? focus.id : null}
                   onConsumeFocus={() => setFocus(null)}
                   onNavigate={onNavigate}
                 />

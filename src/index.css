@@ -245,6 +245,9 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
 .cf-suggestions { margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .cf-suggestions-label { font-size: 12px; color: var(--text-faint); }
 
+/* ---------- items ---------- */
+.cf-item-statblock { font-style: italic; color: var(--text-faint); font-size: 13px; margin: 0 0 16px; }
+
 /* ---------- player view ---------- */
 .cf-playerview { position: fixed; inset: 0; z-index: 200; background: var(--ink); display: flex; flex-direction: column; }
 .cf-playerview-header {

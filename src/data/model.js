@@ -19,6 +19,14 @@ export const LOCATION_TYPES = [
 
 export const QUEST_STATUSES = ["not-started", "active", "completed", "failed"];
 
+// 5e DMG magic item categories (Table: "Magic Item Category") plus "other" for
+// homebrew/mundane items that don't fit those nine.
+export const ITEM_TYPES = ["armor", "potion", "ring", "rod", "scroll", "staff", "wand", "weapon", "wondrous-item", "other"];
+
+// 5e DMG's six official rarity tiers — no "unique", that's a per-item tag
+// (e.g. "legendary (requires attunement, unique)"), not a rarity of its own.
+export const ITEM_RARITIES = ["common", "uncommon", "rare", "very-rare", "legendary", "artifact"];
+
 export const emptyCampaign = (name) => ({
   id: uid(),
   name: name || "Untitled Campaign",
@@ -29,6 +37,7 @@ export const emptyCampaign = (name) => ({
   sessions: [],
   factions: [],
   pcs: [],
+  items: [],
 });
 
 export const emptyNpc = () => ({
@@ -105,6 +114,23 @@ export const emptyFaction = () => ({
   createdAt: Date.now(),
 });
 
+export const emptyItem = () => ({
+  id: uid(),
+  name: "",
+  type: "wondrous-item",
+  rarity: "common",
+  attunement: false,
+  attunementRequirement: "", // e.g. "by a spellcaster", "by a druid" — the DMG's parenthetical qualifier
+  effects: "", // mechanical rules text — what it actually does
+  description: "", // flavor/lore text
+  locationId: null, // where it's found/stored, if not currently carried
+  ownerNpcId: null, // NPC currently carrying/holding it
+  ownerPcId: null, // PC currently carrying/holding it
+  tags: [],
+  pinned: false,
+  createdAt: Date.now(),
+});
+
 export const emptyPc = () => ({
   id: uid(),
   name: "",
@@ -142,4 +168,14 @@ export const normalizeCampaign = (c) => ({
   sessions: (c.sessions || []).map((s) => ({ ...s, pinned: s.pinned || false, relatedPcIds: s.relatedPcIds || [] })),
   factions: (c.factions || []).map((f) => ({ ...f, rivalFactionIds: f.rivalFactionIds || [], pinned: f.pinned || false })),
   pcs: (c.pcs || []).map((p) => ({ ...p, relationships: p.relationships || [], pinned: p.pinned || false })),
+  items: (c.items || []).map((i) => ({
+    ...i,
+    attunement: i.attunement || false,
+    attunementRequirement: i.attunementRequirement || "",
+    locationId: i.locationId ?? null,
+    ownerNpcId: i.ownerNpcId ?? null,
+    ownerPcId: i.ownerPcId ?? null,
+    tags: i.tags || [],
+    pinned: i.pinned || false,
+  })),
 });
