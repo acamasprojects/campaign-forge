@@ -6,6 +6,7 @@ import TagManagerModal from "./components/TagManagerModal.jsx";
 import NpcPanel from "./components/panels/NpcPanel.jsx";
 import LocationPanel from "./components/panels/LocationPanel.jsx";
 import QuestPanel from "./components/panels/QuestPanel.jsx";
+import TagBrowserPanel from "./components/panels/TagBrowserPanel.jsx";
 import { uid } from "./data/model.js";
 
 export default function App() {
@@ -115,6 +116,7 @@ export default function App() {
                   onNavigate={onNavigate}
                 />
               )}
+              {tab === "tags" && <TagBrowserPanel campaign={store.current} onNavigate={onNavigate} />}
             </div>
           </>
         )}

@@ -5,6 +5,7 @@ const TABS = [
   { id: "npcs", label: "NPCs" },
   { id: "locations", label: "Locations" },
   { id: "quests", label: "Quests" },
+  { id: "tags", label: "Tags" },
 ];
 
 /** Top bar: campaign title, tab nav, and a global quick-search across all three lists. */
