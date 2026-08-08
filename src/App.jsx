@@ -3,6 +3,7 @@ import { useCampaignStore } from "./hooks/useCampaignStore.js";
 import Sidebar from "./components/Sidebar.jsx";
 import TopBar from "./components/TopBar.jsx";
 import TagManagerModal from "./components/TagManagerModal.jsx";
+import PlayerView from "./components/PlayerView.jsx";
 import NpcPanel from "./components/panels/NpcPanel.jsx";
 import PcPanel from "./components/panels/PcPanel.jsx";
 import FactionPanel from "./components/panels/FactionPanel.jsx";
@@ -19,6 +20,7 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [focus, setFocus] = useState(null); // { type, id } | null
   const [tagManagerOpen, setTagManagerOpen] = useState(false);
+  const [playerViewOpen, setPlayerViewOpen] = useState(false);
 
   const flash = (msg) => {
     setToast(msg);
@@ -88,7 +90,14 @@ export default function App() {
           <EmptyState onCreate={store.addCampaign} />
         ) : (
           <>
-            <TopBar tab={tab} setTab={setTab} campaign={store.current} onNavigate={onNavigate} />
+            <TopBar
+              tab={tab}
+              setTab={setTab}
+              campaign={store.current}
+              onNavigate={onNavigate}
+              renameCampaign={store.renameCampaign}
+              onOpenPlayerView={() => setPlayerViewOpen(true)}
+            />
             <div className="cf-content">
               {tab === "home" && <DashboardPanel campaign={store.current} onNavigate={onNavigate} />}
               {tab === "npcs" && (
@@ -157,6 +166,9 @@ export default function App() {
         )}
       </main>
       {toast && <div className="cf-toast">{toast}</div>}
+      {playerViewOpen && store.current && (
+        <PlayerView campaign={store.current} onClose={() => setPlayerViewOpen(false)} />
+      )}
       {tagManagerOpen && store.current && (
         <TagManagerModal
           campaign={store.current}
