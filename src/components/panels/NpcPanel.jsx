@@ -163,6 +163,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
         giverId: q.giverId === id ? null : q.giverId,
         relatedNpcIds: q.relatedNpcIds.filter((x) => x !== id),
       }));
+      c.items = c.items.map((i) => (i.ownerNpcId === id ? { ...i, ownerNpcId: null } : i));
       return c;
     });
   };

@@ -7,6 +7,7 @@ const GROUPS = [
   { type: "pcs", label: "Party" },
   { type: "factions", label: "Factions" },
   { type: "locations", label: "Locations" },
+  { type: "items", label: "Items" },
   { type: "quests", label: "Quests" },
   { type: "sessions", label: "Sessions" },
 ];
@@ -145,6 +146,7 @@ export default function PlayerView({ campaign, onClose }) {
 function Detail({ type, entity, campaign, onJump }) {
   if (type === "npcs") return <NpcDetail npc={entity} campaign={campaign} onJump={onJump} />;
   if (type === "locations") return <LocationDetail location={entity} campaign={campaign} onJump={onJump} />;
+  if (type === "items") return <ItemDetail item={entity} campaign={campaign} onJump={onJump} />;
   if (type === "quests") return <QuestDetail quest={entity} campaign={campaign} onJump={onJump} />;
   if (type === "factions") return <FactionDetail faction={entity} campaign={campaign} onJump={onJump} />;
   if (type === "pcs") return <PcDetail pc={entity} campaign={campaign} onJump={onJump} />;
@@ -214,6 +216,7 @@ function NpcDetail({ npc, campaign, onJump }) {
     .filter((other) => (other.relationships || []).some((r) => r.npcId === npc.id))
     .map((other) => ({ other, rel: other.relationships.find((r) => r.npcId === npc.id) }));
   const connectedPcs = campaign.pcs.filter((p) => (p.relationships || []).some((r) => r.npcId === npc.id));
+  const carrying = campaign.items.filter((i) => i.ownerNpcId === npc.id);
 
   return (
     <>
@@ -252,6 +255,9 @@ function NpcDetail({ npc, campaign, onJump }) {
       <Field label="Connected party members">
         <LinkList items={connectedPcs.map((p) => ({ type: "pcs", id: p.id, name: p.name }))} onJump={onJump} />
       </Field>
+      <Field label="Carrying">
+        <LinkList items={carrying.map((i) => ({ type: "items", id: i.id, name: i.name }))} onJump={onJump} />
+      </Field>
       <Field label="Quests">
         <LinkList items={quests.map((q) => ({ type: "quests", id: q.id, name: q.title }))} onJump={onJump} />
       </Field>
@@ -278,6 +284,7 @@ function LocationDetail({ location, campaign, onJump }) {
   const questsHere = campaign.quests.filter((q) => q.locationId === location.id);
   const pcsFrom = campaign.pcs.filter((p) => p.hometownLocationId === location.id);
   const sessions = campaign.sessions.filter((s) => s.relatedLocationIds.includes(location.id));
+  const itemsHere = campaign.items.filter((i) => i.locationId === location.id);
 
   return (
     <>
@@ -294,6 +301,9 @@ function LocationDetail({ location, campaign, onJump }) {
       </Field>
       <Field label="Quests here">
         <LinkList items={questsHere.map((q) => ({ type: "quests", id: q.id, name: q.title }))} onJump={onJump} />
+      </Field>
+      <Field label="Items here">
+        <LinkList items={itemsHere.map((i) => ({ type: "items", id: i.id, name: i.name }))} onJump={onJump} />
       </Field>
       <Field label="Hometown of">
         <LinkList items={pcsFrom.map((p) => ({ type: "pcs", id: p.id, name: p.name }))} onJump={onJump} />
@@ -406,6 +416,7 @@ function PcDetail({ pc, campaign, onJump }) {
   const connections = (pc.relationships || [])
     .map((r) => ({ rel: r, other: campaign.npcs.find((n) => n.id === r.npcId) }))
     .filter((x) => x.other);
+  const carrying = campaign.items.filter((i) => i.ownerPcId === pc.id);
 
   return (
     <>
@@ -431,6 +442,9 @@ function PcDetail({ pc, campaign, onJump }) {
             ))}
           </div>
         )}
+      </Field>
+      <Field label="Carrying">
+        <LinkList items={carrying.map((i) => ({ type: "items", id: i.id, name: i.name }))} onJump={onJump} />
       </Field>
       <Field label="Sessions">
         <LinkList
@@ -476,6 +490,34 @@ function SessionDetail({ session, campaign, onJump }) {
       </Field>
       <Field label="Tags">
         <TagRow tags={session.tags} />
+      </Field>
+    </>
+  );
+}
+
+function ItemDetail({ item, campaign, onJump }) {
+  const location = campaign.locations.find((l) => l.id === item.locationId);
+  const ownerNpc = campaign.npcs.find((n) => n.id === item.ownerNpcId);
+  const ownerPc = campaign.pcs.find((p) => p.id === item.ownerPcId);
+  const attunement = item.attunement
+    ? ` (requires attunement${item.attunementRequirement ? ` ${item.attunementRequirement}` : ""})`
+    : "";
+  const statBlockHeader = `${titleCase(item.type)}, ${titleCase(item.rarity)}${attunement}`;
+
+  return (
+    <>
+      <h2 className="cf-playerview-detail-title">{item.name || "Untitled"}</h2>
+      <div className="cf-item-statblock">{statBlockHeader}</div>
+      <Field label="Carried by">
+        <NameLink type={ownerNpc ? "npcs" : "pcs"} id={ownerNpc?.id || ownerPc?.id} name={ownerNpc?.name || ownerPc?.name} onJump={onJump} />
+      </Field>
+      <Field label="Found at">
+        <NameLink type="locations" id={location?.id} name={location?.name} onJump={onJump} />
+      </Field>
+      <Field label="Mechanical effects">{item.effects}</Field>
+      <Field label="Description">{item.description}</Field>
+      <Field label="Tags">
+        <TagRow tags={item.tags} />
       </Field>
     </>
   );

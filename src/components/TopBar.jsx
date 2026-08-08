@@ -8,6 +8,7 @@ const TABS = [
   { id: "pcs", label: "Party" },
   { id: "factions", label: "Factions" },
   { id: "locations", label: "Locations" },
+  { id: "items", label: "Items" },
   { id: "quests", label: "Quests" },
   { id: "sessions", label: "Sessions" },
   { id: "tags", label: "Tags" },

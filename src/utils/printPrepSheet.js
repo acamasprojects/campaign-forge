@@ -29,6 +29,7 @@ export function buildPrepSheetHtml(campaign) {
     ...campaign.factions.filter((f) => f.pinned).map((f) => ({ kind: "Faction", label: f.name })),
     ...campaign.locations.filter((l) => l.pinned).map((l) => ({ kind: "Location", label: l.name })),
     ...campaign.quests.filter((q) => q.pinned).map((q) => ({ kind: "Quest", label: q.title })),
+    ...campaign.items.filter((i) => i.pinned).map((i) => ({ kind: "Item", label: i.name })),
     ...campaign.sessions
       .filter((s) => s.pinned)
       .map((s) => ({ kind: "Session", label: `Session ${s.sessionNumber}${s.title ? `: ${s.title}` : ""}` })),

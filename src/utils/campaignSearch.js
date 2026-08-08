@@ -29,6 +29,7 @@ export function scoreCampaign(campaign, query) {
   const sessionsForLocation = (locId) => campaign.sessions.filter((s) => s.relatedLocationIds.includes(locId));
   const sessionsForQuest = (questId) => campaign.sessions.filter((s) => s.relatedQuestIds.includes(questId));
   const sessionsForPc = (pcId) => campaign.sessions.filter((s) => s.relatedPcIds.includes(pcId));
+  const npcOrPcName = (npcId, pcId) => npcName(npcId) || pcName(pcId);
   const relationshipNames = (n) =>
     [
       ...(n.relationships || []).map((r) => npcName(r.npcId)),
@@ -147,6 +148,22 @@ export function scoreCampaign(campaign, query) {
         { value: (p.tags || []).join(" "), weight: 2, label: "tags" },
         { value: connectedNpcNames(p.relationships), weight: 1, label: "connections" },
         { value: sessionsForPc(p.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
+      ]),
+    })),
+    ...campaign.items.map((i) => ({
+      type: "items",
+      id: i.id,
+      label: i.name,
+      kind: "Item",
+      ...scoreEntity(query, [
+        { value: i.name, weight: 3, label: "name" },
+        { value: i.type, weight: 1, label: "type" },
+        { value: i.rarity, weight: 1, label: "rarity" },
+        { value: locationName(i.locationId), weight: 1, label: "location" },
+        { value: npcOrPcName(i.ownerNpcId, i.ownerPcId), weight: 1, label: "owner" },
+        { value: (i.tags || []).join(" "), weight: 2, label: "tags" },
+        { value: i.effects, weight: 1, label: "effects" },
+        { value: i.description, weight: 0.5, label: "description" },
       ]),
     })),
   ];
