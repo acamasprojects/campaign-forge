@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { scoreEntity, suggestClosest } from "../utils/search.js";
 
 const TABS = [
+  { id: "home", label: "Home" },
   { id: "npcs", label: "NPCs" },
   { id: "locations", label: "Locations" },
   { id: "quests", label: "Quests" },

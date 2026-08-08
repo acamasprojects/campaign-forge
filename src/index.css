@@ -256,6 +256,20 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
 .cf-relationship-label-input { flex: 0 0 150px; padding: 7px 10px; font-size: 12.5px; }
 .cf-relationship-incoming { margin-top: 10px; }
 
+/* ---------- dashboard ---------- */
+.cf-dashboard-section { margin-bottom: 28px; }
+.cf-dashboard-heading {
+  font-family: var(--font-display); font-size: 15px; color: var(--gold-2); margin: 0 0 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.cf-dashboard-recap {
+  background: var(--ink-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; cursor: pointer;
+}
+.cf-dashboard-recap:hover { border-color: var(--border-3); }
+.cf-dashboard-recap-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.cf-dashboard-recap-body { margin: 0; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
 /* ---------- tag browser ---------- */
 .cf-tag-browser-count { font-family: var(--font-mono); font-size: 10px; opacity: 0.7; }
 .cf-tag-browser-groups { display: flex; flex-direction: column; gap: 4px; }

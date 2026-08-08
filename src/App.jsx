@@ -8,11 +8,12 @@ import LocationPanel from "./components/panels/LocationPanel.jsx";
 import QuestPanel from "./components/panels/QuestPanel.jsx";
 import SessionPanel from "./components/panels/SessionPanel.jsx";
 import TagBrowserPanel from "./components/panels/TagBrowserPanel.jsx";
+import DashboardPanel from "./components/panels/DashboardPanel.jsx";
 import { uid } from "./data/model.js";
 
 export default function App() {
   const store = useCampaignStore();
-  const [tab, setTab] = useState("npcs");
+  const [tab, setTab] = useState("home");
   const [toast, setToast] = useState(null);
   const [focus, setFocus] = useState(null); // { type, id } | null
   const [tagManagerOpen, setTagManagerOpen] = useState(false);
@@ -87,6 +88,7 @@ export default function App() {
           <>
             <TopBar tab={tab} setTab={setTab} campaign={store.current} onNavigate={onNavigate} />
             <div className="cf-content">
+              {tab === "home" && <DashboardPanel campaign={store.current} onNavigate={onNavigate} />}
               {tab === "npcs" && (
                 <NpcPanel
                   campaign={store.current}
