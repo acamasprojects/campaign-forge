@@ -29,6 +29,15 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
   const npcsAt = (locId) => campaign.npcs.filter((n) => n.locationId === locId);
   const questsAt = (locId) => campaign.quests.filter((q) => q.locationId === locId);
   const relatedNpcNames = (q) => q.relatedNpcIds.map((id) => npcName(id)).filter(Boolean).join(" ");
+  const relationshipNames = (n) =>
+    [
+      ...(n.relationships || []).map((r) => npcName(r.npcId)),
+      ...campaign.npcs
+        .filter((other) => (other.relationships || []).some((r) => r.npcId === n.id))
+        .map((other) => other.name),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   // Score every entity across every field it has — including the entities
   // it's cross-linked to — so a search finds an NPC by a quest they're tied
@@ -48,6 +57,7 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
         { value: (n.tags || []).join(" "), weight: 2, label: "tags" },
         { value: n.description, weight: 0.5, label: "description" },
         { value: questsForNpc(n.id).map((q) => q.title).join(" "), weight: 1, label: "quests" },
+        { value: relationshipNames(n), weight: 1, label: "relationships" },
       ]),
     })),
     ...campaign.locations.map((l) => ({

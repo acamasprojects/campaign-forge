@@ -36,8 +36,11 @@ export const emptyNpc = () => ({
   locationId: null,
   tags: [],
   description: "",
+  relationships: [], // [{ id, npcId, label }] — directed edge to another NPC (e.g. "rival", "sister")
   createdAt: Date.now(),
 });
+
+export const emptyRelationship = () => ({ id: uid(), npcId: null, label: "" });
 
 export const emptyLocation = () => ({
   id: uid(),

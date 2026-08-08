@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { emptyNpc, DISPOSITIONS } from "../../data/model.js";
+import { emptyNpc, emptyRelationship, DISPOSITIONS } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
 import FilterBar from "../FilterBar.jsx";
@@ -41,6 +41,13 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
 
   const locationOptions = campaign.locations.map((l) => ({ id: l.id, label: l.name || "Untitled" }));
   const locationName = (id) => campaign.locations.find((l) => l.id === id)?.name || null;
+  const npcName = (id) => campaign.npcs.find((x) => x.id === id)?.name || null;
+  const incomingRelationshipsFor = (npcId) =>
+    campaign.npcs.flatMap((other) =>
+      (other.relationships || [])
+        .filter((r) => r.npcId === npcId)
+        .map((r) => ({ ...r, fromNpcId: other.id, fromName: other.name }))
+    );
 
   useEffect(() => {
     if (!focusId) return;
@@ -70,6 +77,16 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
     { value: (n.tags || []).join(" "), weight: 2, label: "tags" },
     { value: n.description, weight: 0.5, label: "description" },
     { value: questsForNpc(n.id).map((q) => q.title).join(" "), weight: 1, label: "quests" },
+    {
+      value: [
+        ...(n.relationships || []).map((r) => npcName(r.npcId)),
+        ...incomingRelationshipsFor(n.id).map((r) => r.fromName),
+      ]
+        .filter(Boolean)
+        .join(" "),
+      weight: 1,
+      label: "relationships",
+    },
   ];
 
   const extraFilter = (n) =>
@@ -112,7 +129,9 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
 
   const removeNpc = (id) => {
     update((c) => {
-      c.npcs = c.npcs.filter((n) => n.id !== id);
+      c.npcs = c.npcs
+        .filter((n) => n.id !== id)
+        .map((n) => ({ ...n, relationships: (n.relationships || []).filter((r) => r.npcId !== id) }));
       c.quests = c.quests.map((q) => ({
         ...q,
         giverId: q.giverId === id ? null : q.giverId,
@@ -120,6 +139,25 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
       }));
       return c;
     });
+  };
+
+  const addRelationship = (npcId) => {
+    const npc = campaign.npcs.find((x) => x.id === npcId);
+    setField(npcId, "relationships", [...(npc.relationships || []), emptyRelationship()]);
+  };
+
+  const setRelationshipField = (npcId, relId, field, value) => {
+    const npc = campaign.npcs.find((x) => x.id === npcId);
+    setField(
+      npcId,
+      "relationships",
+      (npc.relationships || []).map((r) => (r.id === relId ? { ...r, [field]: value } : r))
+    );
+  };
+
+  const removeRelationship = (npcId, relId) => {
+    const npc = campaign.npcs.find((x) => x.id === npcId);
+    setField(npcId, "relationships", (npc.relationships || []).filter((r) => r.id !== relId));
   };
 
   return (
@@ -181,6 +219,10 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
           {filtered.map((n) => {
             const expanded = expandedId === n.id;
             const linkedQuests = questsForNpc(n.id);
+            const incomingRels = incomingRelationshipsFor(n.id);
+            const otherNpcOptions = campaign.npcs
+              .filter((x) => x.id !== n.id)
+              .map((x) => ({ id: x.id, label: x.name || "Untitled" }));
             return (
               <EntityCard
                 key={n.id}
@@ -236,6 +278,57 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                     onChange={(id) => setField(n.id, "locationId", id)}
                     placeholder="Link a location…"
                   />
+                </div>
+
+                <div className="cf-field">
+                  <span className="cf-field-label">Relationships</span>
+                  <div className="cf-relationship-list">
+                    {(n.relationships || []).map((r) => (
+                      <div className="cf-relationship-row" key={r.id}>
+                        <input
+                          className="cf-input cf-relationship-label-input"
+                          value={r.label}
+                          placeholder="rival, sister, owes a debt to…"
+                          onChange={(e) => setRelationshipField(n.id, r.id, "label", e.target.value)}
+                        />
+                        <LinkPicker
+                          options={otherNpcOptions}
+                          selected={r.npcId}
+                          onChange={(id) => setRelationshipField(n.id, r.id, "npcId", id)}
+                          placeholder="Link an NPC…"
+                        />
+                        <button
+                          type="button"
+                          className="cf-delete-btn"
+                          onClick={() => removeRelationship(n.id, r.id)}
+                          title="Remove relationship"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" className="cf-btn cf-btn-ghost cf-btn-small" onClick={() => addRelationship(n.id)}>
+                    + Add relationship
+                  </button>
+                  {incomingRels.length > 0 && (
+                    <div className="cf-relationship-incoming">
+                      <span className="cf-field-label">Also linked from</span>
+                      <div className="cf-chip-row">
+                        {incomingRels.map((r) => (
+                          <button
+                            key={r.id}
+                            type="button"
+                            className="cf-chip cf-chip-link"
+                            onClick={() => onNavigate("npcs", r.fromNpcId)}
+                          >
+                            {r.fromName || "Untitled"}
+                            {r.label ? ` (${r.label})` : ""}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="cf-field">
