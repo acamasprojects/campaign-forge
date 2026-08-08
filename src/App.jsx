@@ -150,7 +150,7 @@ export default function App() {
 function EmptyState({ onCreate }) {
   return (
     <div className="cf-empty-state">
-      <div className="cf-empty-state-mark">🎲</div>
+      <div className="cf-empty-state-mark">🕯</div>
       <h2 className="cf-empty-state-title">No campaign at the table</h2>
       <p className="cf-empty-state-body">
         Start a new campaign to build out NPCs, locations, and quests.

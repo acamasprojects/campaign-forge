@@ -8,10 +8,10 @@ import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
 
 const STATUS_COLOR = {
-  "not-started": "#8A8172",
-  active: "#C9A227",
-  completed: "#5A8F5A",
-  failed: "#A33D2C",
+  "not-started": "#6E655C",
+  active: "#A13D3D",
+  completed: "#55704A",
+  failed: "#7A2020",
 };
 
 const SORT_OPTIONS = [

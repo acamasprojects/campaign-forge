@@ -8,17 +8,17 @@ import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
 
 const DISPOSITION_COLOR = {
-  friendly: "#5A8F5A",
-  neutral: "#C9A227",
-  hostile: "#A33D2C",
-  unknown: "#8A8172",
+  friendly: "#55704A",
+  neutral: "#93762E",
+  hostile: "#7A2020",
+  unknown: "#6E655C",
 };
 
 const NPC_STATUS_COLOR = {
-  alive: "#5A8F5A",
-  missing: "#C9A227",
-  captured: "#8A6FB0",
-  dead: "#A33D2C",
+  alive: "#55704A",
+  missing: "#93762E",
+  captured: "#5E4A70",
+  dead: "#7A2020",
 };
 
 const SORT_OPTIONS = [
