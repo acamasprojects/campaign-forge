@@ -12,12 +12,15 @@ export default function TagBrowserPanel({ campaign, onNavigate }) {
 
   const usage = new Map();
   const bump = (tag, key, item) => {
-    if (!usage.has(tag)) usage.set(tag, { npcs: [], locations: [], quests: [] });
+    if (!usage.has(tag)) usage.set(tag, { npcs: [], locations: [], quests: [], sessions: [], factions: [], pcs: [] });
     usage.get(tag)[key].push(item);
   };
   campaign.npcs.forEach((n) => (n.tags || []).forEach((t) => bump(t, "npcs", n)));
   campaign.locations.forEach((l) => (l.tags || []).forEach((t) => bump(t, "locations", l)));
   campaign.quests.forEach((q) => (q.tags || []).forEach((t) => bump(t, "quests", q)));
+  campaign.sessions.forEach((s) => (s.tags || []).forEach((t) => bump(t, "sessions", s)));
+  campaign.factions.forEach((f) => (f.tags || []).forEach((t) => bump(t, "factions", f)));
+  campaign.pcs.forEach((p) => (p.tags || []).forEach((t) => bump(t, "pcs", p)));
 
   const tags = Array.from(usage.keys())
     .filter((t) => t.toLowerCase().includes(search.trim().toLowerCase()))
@@ -33,7 +36,7 @@ export default function TagBrowserPanel({ campaign, onNavigate }) {
       </div>
 
       {usage.size === 0 ? (
-        <div className="cf-empty-panel">No tags used yet. Add tags to NPCs, Locations, or Quests to browse by them here.</div>
+        <div className="cf-empty-panel">No tags used yet. Add tags anywhere in the campaign to browse by them here.</div>
       ) : (
         <>
           <input
@@ -46,7 +49,7 @@ export default function TagBrowserPanel({ campaign, onNavigate }) {
           <div className="cf-chip-row" style={{ marginBottom: 20 }}>
             {tags.map((t) => {
               const u = usage.get(t);
-              const total = u.npcs.length + u.locations.length + u.quests.length;
+              const total = u.npcs.length + u.locations.length + u.quests.length + u.sessions.length + u.factions.length + u.pcs.length;
               return (
                 <button
                   key={t}
@@ -63,8 +66,16 @@ export default function TagBrowserPanel({ campaign, onNavigate }) {
           {group && (
             <div className="cf-tag-browser-groups">
               <TagBrowserGroup label="NPCs" items={group.npcs} nameOf={(n) => n.name} onPick={(id) => onNavigate("npcs", id)} />
+              <TagBrowserGroup label="Party" items={group.pcs} nameOf={(p) => p.name} onPick={(id) => onNavigate("pcs", id)} />
+              <TagBrowserGroup label="Factions" items={group.factions} nameOf={(f) => f.name} onPick={(id) => onNavigate("factions", id)} />
               <TagBrowserGroup label="Locations" items={group.locations} nameOf={(l) => l.name} onPick={(id) => onNavigate("locations", id)} />
               <TagBrowserGroup label="Quests" items={group.quests} nameOf={(q) => q.title} onPick={(id) => onNavigate("quests", id)} />
+              <TagBrowserGroup
+                label="Sessions"
+                items={group.sessions}
+                nameOf={(s) => `Session ${s.sessionNumber}${s.title ? `: ${s.title}` : ""}`}
+                onPick={(id) => onNavigate("sessions", id)}
+              />
             </div>
           )}
         </>

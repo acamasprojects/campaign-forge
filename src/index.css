@@ -257,6 +257,13 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
 .cf-modal-title { font-family: var(--font-display); font-size: 17px; color: var(--text-bright); margin: 0; letter-spacing: 0.02em; }
 .cf-modal-body { padding: 16px 20px 20px; overflow-y: auto; }
 
+/* ---------- secrets & clues ---------- */
+.cf-clue-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.cf-clue-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cf-clue-text-input { flex: 1; min-width: 200px; }
+.cf-clue-toggle { flex-shrink: 0; color: var(--text-faint); border-color: var(--border-3); text-transform: uppercase; letter-spacing: 0.03em; font-size: 10px; }
+.cf-clue-revealed { color: var(--green); border-color: var(--green); }
+
 /* ---------- npc relationships ---------- */
 .cf-relationship-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
 .cf-relationship-row { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; }

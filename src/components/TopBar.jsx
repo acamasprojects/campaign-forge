@@ -4,6 +4,8 @@ import { scoreEntity, suggestClosest } from "../utils/search.js";
 const TABS = [
   { id: "home", label: "Home" },
   { id: "npcs", label: "NPCs" },
+  { id: "pcs", label: "Party" },
+  { id: "factions", label: "Factions" },
   { id: "locations", label: "Locations" },
   { id: "quests", label: "Quests" },
   { id: "sessions", label: "Sessions" },
@@ -27,15 +29,21 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
   const npcName = (id) => campaign.npcs.find((n) => n.id === id)?.name || null;
   const locationName = (id) => campaign.locations.find((l) => l.id === id)?.name || null;
   const questName = (id) => campaign.quests.find((q) => q.id === id)?.title || null;
+  const pcName = (id) => campaign.pcs.find((p) => p.id === id)?.name || null;
+  const factionName = (id) => campaign.factions.find((f) => f.id === id)?.name || null;
   const questsForNpc = (npcId) =>
     campaign.quests.filter((q) => q.giverId === npcId || q.relatedNpcIds.includes(npcId));
   const npcsAt = (locId) => campaign.npcs.filter((n) => n.locationId === locId);
   const questsAt = (locId) => campaign.quests.filter((q) => q.locationId === locId);
+  const pcsFrom = (locId) => campaign.pcs.filter((p) => p.hometownLocationId === locId);
+  const membersOf = (factionId) => campaign.npcs.filter((n) => n.factionId === factionId);
   const relatedNpcNames = (q) => q.relatedNpcIds.map((id) => npcName(id)).filter(Boolean).join(" ");
+  const relatedPcNames = (ids) => ids.map((id) => pcName(id)).filter(Boolean).join(" ");
   const sessionLabel = (s) => (s.title ? `${s.title}` : "");
   const sessionsForNpc = (npcId) => campaign.sessions.filter((s) => s.relatedNpcIds.includes(npcId));
   const sessionsForLocation = (locId) => campaign.sessions.filter((s) => s.relatedLocationIds.includes(locId));
   const sessionsForQuest = (questId) => campaign.sessions.filter((s) => s.relatedQuestIds.includes(questId));
+  const sessionsForPc = (pcId) => campaign.sessions.filter((s) => s.relatedPcIds.includes(pcId));
   const relationshipNames = (n) =>
     [
       ...(n.relationships || []).map((r) => npcName(r.npcId)),
@@ -45,6 +53,7 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
     ]
       .filter(Boolean)
       .join(" ");
+  const connectedNpcNames = (relationships) => (relationships || []).map((r) => npcName(r.npcId)).filter(Boolean).join(" ");
 
   // Score every entity across every field it has — including the entities
   // it's cross-linked to — so a search finds an NPC by a quest they're tied
@@ -58,7 +67,7 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
       ...scoreEntity(query, [
         { value: n.name, weight: 3, label: "name" },
         { value: n.role, weight: 1.5, label: "role" },
-        { value: n.faction, weight: 1.5, label: "faction" },
+        { value: factionName(n.factionId), weight: 1.5, label: "faction" },
         { value: n.race, weight: 1, label: "race" },
         { value: locationName(n.locationId), weight: 1, label: "location" },
         { value: (n.tags || []).join(" "), weight: 2, label: "tags" },
@@ -66,6 +75,14 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
         { value: questsForNpc(n.id).map((q) => q.title).join(" "), weight: 1, label: "quests" },
         { value: relationshipNames(n), weight: 1, label: "relationships" },
         { value: sessionsForNpc(n.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
+        {
+          value: campaign.pcs
+            .filter((p) => (p.relationships || []).some((r) => r.npcId === n.id))
+            .map((p) => p.name)
+            .join(" "),
+          weight: 1,
+          label: "connected PCs",
+        },
       ]),
     })),
     ...campaign.locations.map((l) => ({
@@ -81,6 +98,7 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
         { value: npcsAt(l.id).map((n) => n.name).join(" "), weight: 1, label: "NPCs here" },
         { value: questsAt(l.id).map((q) => q.title).join(" "), weight: 1, label: "quests here" },
         { value: sessionsForLocation(l.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
+        { value: pcsFrom(l.id).map((p) => p.name).join(" "), weight: 1, label: "PCs from here" },
       ]),
     })),
     ...campaign.quests.map((qu) => ({
@@ -94,9 +112,11 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
         { value: npcName(qu.giverId), weight: 1.5, label: "giver" },
         { value: locationName(qu.locationId), weight: 1, label: "location" },
         { value: relatedNpcNames(qu), weight: 1, label: "related NPCs" },
+        { value: relatedPcNames(qu.relatedPcIds), weight: 1, label: "related PCs" },
         { value: (qu.tags || []).join(" "), weight: 2, label: "tags" },
         { value: qu.description, weight: 0.5, label: "description" },
         { value: sessionsForQuest(qu.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
+        { value: (qu.clues || []).map((c) => c.text).join(" "), weight: 0.5, label: "clues" },
       ]),
     })),
     ...campaign.sessions.map((s) => ({
@@ -113,6 +133,38 @@ export default function TopBar({ tab, setTab, campaign, onNavigate }) {
         { value: s.relatedNpcIds.map((id) => npcName(id)).join(" "), weight: 1, label: "NPCs" },
         { value: s.relatedLocationIds.map((id) => locationName(id)).join(" "), weight: 1, label: "locations" },
         { value: s.relatedQuestIds.map((id) => questName(id)).join(" "), weight: 1, label: "quests" },
+        { value: relatedPcNames(s.relatedPcIds), weight: 1, label: "PCs" },
+      ]),
+    })),
+    ...campaign.factions.map((f) => ({
+      type: "factions",
+      id: f.id,
+      label: f.name,
+      kind: "Faction",
+      ...scoreEntity(query, [
+        { value: f.name, weight: 3, label: "name" },
+        { value: f.standing, weight: 1, label: "standing" },
+        { value: f.agenda, weight: 1, label: "agenda" },
+        { value: (f.tags || []).join(" "), weight: 2, label: "tags" },
+        { value: membersOf(f.id).map((n) => n.name).join(" "), weight: 1, label: "members" },
+        { value: (f.rivalFactionIds || []).map(factionName).join(" "), weight: 1, label: "rivals" },
+      ]),
+    })),
+    ...campaign.pcs.map((p) => ({
+      type: "pcs",
+      id: p.id,
+      label: p.name,
+      kind: "PC",
+      ...scoreEntity(query, [
+        { value: p.name, weight: 3, label: "name" },
+        { value: p.playerName, weight: 1.5, label: "player" },
+        { value: p.classLevel, weight: 1, label: "class" },
+        { value: p.race, weight: 1, label: "race" },
+        { value: locationName(p.hometownLocationId), weight: 1, label: "hometown" },
+        { value: p.backstory, weight: 0.5, label: "backstory" },
+        { value: (p.tags || []).join(" "), weight: 2, label: "tags" },
+        { value: connectedNpcNames(p.relationships), weight: 1, label: "connections" },
+        { value: sessionsForPc(p.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
       ]),
     })),
   ];

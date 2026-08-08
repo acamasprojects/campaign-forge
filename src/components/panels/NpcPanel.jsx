@@ -42,6 +42,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
   const [activeDispositions, setActiveDispositions] = useState([]);
   const [activeStatuses, setActiveStatuses] = useState([]);
   const [activeLocations, setActiveLocations] = useState([]);
+  const [activeFactions, setActiveFactions] = useState([]);
   const [activeTags, setActiveTags] = useState([]);
   const [pinnedOnly, setPinnedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("relevance");
@@ -50,12 +51,20 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
 
   const locationOptions = campaign.locations.map((l) => ({ id: l.id, label: l.name || "Untitled" }));
   const locationName = (id) => campaign.locations.find((l) => l.id === id)?.name || null;
+  const factionOptions = campaign.factions.map((f) => ({ id: f.id, label: f.name || "Untitled" }));
+  const factionName = (id) => campaign.factions.find((f) => f.id === id)?.name || null;
   const npcName = (id) => campaign.npcs.find((x) => x.id === id)?.name || null;
   const incomingRelationshipsFor = (npcId) =>
     campaign.npcs.flatMap((other) =>
       (other.relationships || [])
         .filter((r) => r.npcId === npcId)
         .map((r) => ({ ...r, fromNpcId: other.id, fromName: other.name }))
+    );
+  const connectedPcsFor = (npcId) =>
+    campaign.pcs.flatMap((pc) =>
+      (pc.relationships || [])
+        .filter((r) => r.npcId === npcId)
+        .map((r) => ({ ...r, fromPcId: pc.id, fromName: pc.name }))
     );
 
   useEffect(() => {
@@ -82,7 +91,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
   const fieldsFor = (n) => [
     { value: n.name, weight: 3, label: "name" },
     { value: n.role, weight: 1.5, label: "role" },
-    { value: n.faction, weight: 1.5, label: "faction" },
+    { value: factionName(n.factionId), weight: 1.5, label: "faction" },
     { value: n.race, weight: 1, label: "race" },
     { value: locationName(n.locationId), weight: 1, label: "location" },
     { value: (n.tags || []).join(" "), weight: 2, label: "tags" },
@@ -100,12 +109,14 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
       label: "relationships",
     },
     { value: sessionsForNpc(n.id).map(sessionLabel).join(" "), weight: 1, label: "sessions" },
+    { value: connectedPcsFor(n.id).map((r) => r.fromName).filter(Boolean).join(" "), weight: 1, label: "connected PCs" },
   ];
 
   const extraFilter = (n) =>
     (activeDispositions.length === 0 || activeDispositions.includes(n.disposition)) &&
     (activeStatuses.length === 0 || activeStatuses.includes(n.status)) &&
     (activeLocations.length === 0 || activeLocations.includes(n.locationId)) &&
+    (activeFactions.length === 0 || activeFactions.includes(n.factionId)) &&
     (!pinnedOnly || n.pinned) &&
     hasAllTags(n.tags, activeTags);
 
@@ -195,6 +206,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
           setActiveDispositions([]);
           setActiveStatuses([]);
           setActiveLocations([]);
+          setActiveFactions([]);
           setActiveTags([]);
           setPinnedOnly(false);
         }}
@@ -217,6 +229,13 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
             active: activeLocations,
             setActive: setActiveLocations,
             formatLabel: (id) => locationName(id) || "Untitled",
+          },
+          {
+            label: "Faction",
+            values: campaign.factions.map((f) => f.id),
+            active: activeFactions,
+            setActive: setActiveFactions,
+            formatLabel: (id) => factionName(id) || "Untitled",
           },
           { label: "Tags", values: allTags, active: activeTags, setActive: setActiveTags },
         ]}
@@ -245,6 +264,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
             const linkedQuests = questsForNpc(n.id);
             const linkedSessions = sessionsForNpc(n.id);
             const incomingRels = incomingRelationshipsFor(n.id);
+            const connectedPcs = connectedPcsFor(n.id);
             const otherNpcOptions = campaign.npcs
               .filter((x) => x.id !== n.id)
               .map((x) => ({ id: x.id, label: x.name || "Untitled" }));
@@ -273,9 +293,12 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                     {n.locationId && locationName(n.locationId) && (
                       <span className="cf-badge cf-badge-muted">{locationName(n.locationId)}</span>
                     )}
+                    {n.factionId && factionName(n.factionId) && (
+                      <span className="cf-badge cf-badge-muted">{factionName(n.factionId)}</span>
+                    )}
                   </>
                 }
-                meta={<span className="cf-card-submeta">{n.role || n.faction || ""}</span>}
+                meta={<span className="cf-card-submeta">{n.role || factionName(n.factionId) || ""}</span>}
                 matchNote={matchNoteFor(n.id)}
               >
                 <div className="cf-form-grid">
@@ -291,10 +314,15 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                     <span className="cf-field-label">Race</span>
                     <input className="cf-input" value={n.race} onChange={(e) => setField(n.id, "race", e.target.value)} placeholder="Half-elf" />
                   </label>
-                  <label className="cf-field">
+                  <div className="cf-field">
                     <span className="cf-field-label">Faction</span>
-                    <input className="cf-input" value={n.faction} onChange={(e) => setField(n.id, "faction", e.target.value)} placeholder="Thieves' Guild" />
-                  </label>
+                    <LinkPicker
+                      options={factionOptions}
+                      selected={n.factionId}
+                      onChange={(id) => setField(n.id, "factionId", id)}
+                      placeholder="Link a faction…"
+                    />
+                  </div>
                 </div>
 
                 <div className="cf-form-grid">
@@ -404,6 +432,20 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                       {linkedSessions.map((s) => (
                         <button key={s.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("sessions", s.id)}>
                           {sessionLabel(s)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {connectedPcs.length > 0 && (
+                  <div className="cf-field">
+                    <span className="cf-field-label">Connected PCs</span>
+                    <div className="cf-chip-row">
+                      {connectedPcs.map((r) => (
+                        <button key={r.id} type="button" className="cf-chip cf-chip-link" onClick={() => onNavigate("pcs", r.fromPcId)}>
+                          {r.fromName || "Untitled"}
+                          {r.label ? ` (${r.label})` : ""}
                         </button>
                       ))}
                     </div>

@@ -25,12 +25,15 @@ export default function TagManagerModal({ campaign, update, flash, onClose }) {
 
   const usage = new Map();
   const bump = (tag, key) => {
-    if (!usage.has(tag)) usage.set(tag, { npcs: 0, locations: 0, quests: 0 });
+    if (!usage.has(tag)) usage.set(tag, { npcs: 0, locations: 0, quests: 0, sessions: 0, factions: 0, pcs: 0 });
     usage.get(tag)[key] += 1;
   };
   campaign.npcs.forEach((n) => (n.tags || []).forEach((t) => bump(t, "npcs")));
   campaign.locations.forEach((l) => (l.tags || []).forEach((t) => bump(t, "locations")));
   campaign.quests.forEach((q) => (q.tags || []).forEach((t) => bump(t, "quests")));
+  campaign.sessions.forEach((s) => (s.tags || []).forEach((t) => bump(t, "sessions")));
+  campaign.factions.forEach((f) => (f.tags || []).forEach((t) => bump(t, "factions")));
+  campaign.pcs.forEach((p) => (p.tags || []).forEach((t) => bump(t, "pcs")));
 
   const tags = Array.from(usage.keys())
     .filter((t) => t.toLowerCase().includes(search.trim().toLowerCase()))
@@ -43,6 +46,9 @@ export default function TagManagerModal({ campaign, update, flash, onClose }) {
       c.npcs = withTagRenamed(c.npcs, oldTag, newTag);
       c.locations = withTagRenamed(c.locations, oldTag, newTag);
       c.quests = withTagRenamed(c.quests, oldTag, newTag);
+      c.sessions = withTagRenamed(c.sessions, oldTag, newTag);
+      c.factions = withTagRenamed(c.factions, oldTag, newTag);
+      c.pcs = withTagRenamed(c.pcs, oldTag, newTag);
       return c;
     });
     setDrafts((d) => ({ ...d, [oldTag]: "" }));
@@ -55,6 +61,9 @@ export default function TagManagerModal({ campaign, update, flash, onClose }) {
       c.npcs = withTagRemoved(c.npcs, tag);
       c.locations = withTagRemoved(c.locations, tag);
       c.quests = withTagRemoved(c.quests, tag);
+      c.sessions = withTagRemoved(c.sessions, tag);
+      c.factions = withTagRemoved(c.factions, tag);
+      c.pcs = withTagRemoved(c.pcs, tag);
       return c;
     });
     flash(`Removed tag "${tag}"`);
@@ -75,7 +84,7 @@ export default function TagManagerModal({ campaign, update, flash, onClose }) {
         <div className="cf-tag-manager-list">
           {tags.map((tag) => {
             const u = usage.get(tag);
-            const total = u.npcs + u.locations + u.quests;
+            const total = u.npcs + u.locations + u.quests + u.sessions + u.factions + u.pcs;
             return (
               <div className="cf-tag-manager-row" key={tag}>
                 <div className="cf-tag-manager-info">
@@ -83,8 +92,11 @@ export default function TagManagerModal({ campaign, update, flash, onClose }) {
                   <span className="cf-tag-manager-count">
                     {total} use{total === 1 ? "" : "s"}
                     {u.npcs > 0 && ` · ${u.npcs} NPC${u.npcs === 1 ? "" : "s"}`}
+                    {u.pcs > 0 && ` · ${u.pcs} PC${u.pcs === 1 ? "" : "s"}`}
+                    {u.factions > 0 && ` · ${u.factions} faction${u.factions === 1 ? "" : "s"}`}
                     {u.locations > 0 && ` · ${u.locations} location${u.locations === 1 ? "" : "s"}`}
                     {u.quests > 0 && ` · ${u.quests} quest${u.quests === 1 ? "" : "s"}`}
+                    {u.sessions > 0 && ` · ${u.sessions} session${u.sessions === 1 ? "" : "s"}`}
                   </span>
                 </div>
                 <div className="cf-tag-manager-actions">
