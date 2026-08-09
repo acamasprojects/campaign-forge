@@ -166,5 +166,37 @@ export function scoreCampaign(campaign, query) {
         { value: i.description, weight: 0.5, label: "description" },
       ]),
     })),
+    // Monsters and battle grids are DM-only content — spoilers (stat blocks,
+    // encounter setups) that shouldn't surface in Player View's search, even
+    // though they're findable via the DM-facing top bar quick search. Callers
+    // that build a player-facing list from this array must filter these two
+    // types out; see PlayerView.jsx.
+    ...campaign.monsters.map((m) => ({
+      type: "monsters",
+      id: m.id,
+      label: m.name,
+      kind: "Monster",
+      ...scoreEntity(query, [
+        { value: m.name, weight: 3, label: "name" },
+        { value: m.type, weight: 1, label: "type" },
+        { value: m.size, weight: 1, label: "size" },
+        { value: locationName(m.locationId), weight: 1, label: "location" },
+        { value: (m.tags || []).join(" "), weight: 2, label: "tags" },
+        { value: m.traits, weight: 0.5, label: "traits" },
+        { value: m.description, weight: 0.5, label: "description" },
+      ]),
+    })),
+    ...campaign.grids.map((g) => ({
+      type: "grids",
+      id: g.id,
+      label: g.name,
+      kind: "Battle Grid",
+      ...scoreEntity(query, [
+        { value: g.name, weight: 3, label: "name" },
+        { value: locationName(g.locationId), weight: 1, label: "location" },
+        { value: (g.tags || []).join(" "), weight: 2, label: "tags" },
+        { value: g.notes, weight: 0.5, label: "notes" },
+      ]),
+    })),
   ];
 }

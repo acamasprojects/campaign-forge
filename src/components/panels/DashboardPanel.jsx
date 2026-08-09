@@ -26,6 +26,8 @@ export default function DashboardPanel({ campaign, onNavigate }) {
   const pinnedQuests = campaign.quests.filter((q) => q.pinned);
   const pinnedSessions = campaign.sessions.filter((s) => s.pinned);
   const pinnedItems = campaign.items.filter((i) => i.pinned);
+  const pinnedMonsters = campaign.monsters.filter((m) => m.pinned);
+  const pinnedGrids = campaign.grids.filter((g) => g.pinned);
   const anyPinned =
     pinnedNpcs.length +
       pinnedPcs.length +
@@ -33,7 +35,9 @@ export default function DashboardPanel({ campaign, onNavigate }) {
       pinnedLocations.length +
       pinnedQuests.length +
       pinnedSessions.length +
-      pinnedItems.length >
+      pinnedItems.length +
+      pinnedMonsters.length +
+      pinnedGrids.length >
     0;
 
   const isEmpty =
@@ -43,7 +47,9 @@ export default function DashboardPanel({ campaign, onNavigate }) {
     campaign.sessions.length === 0 &&
     campaign.factions.length === 0 &&
     campaign.pcs.length === 0 &&
-    campaign.items.length === 0;
+    campaign.items.length === 0 &&
+    campaign.monsters.length === 0 &&
+    campaign.grids.length === 0;
 
   if (isEmpty) {
     return (
@@ -137,6 +143,8 @@ export default function DashboardPanel({ campaign, onNavigate }) {
             <PinnedGroup label="Locations" items={pinnedLocations} nameOf={(l) => l.name} onPick={(id) => onNavigate("locations", id)} />
             <PinnedGroup label="Quests" items={pinnedQuests} nameOf={(q) => q.title} onPick={(id) => onNavigate("quests", id)} />
             <PinnedGroup label="Items" items={pinnedItems} nameOf={(i) => i.name} onPick={(id) => onNavigate("items", id)} />
+            <PinnedGroup label="Bestiary" items={pinnedMonsters} nameOf={(m) => m.name} onPick={(id) => onNavigate("monsters", id)} />
+            <PinnedGroup label="Battle Grids" items={pinnedGrids} nameOf={(g) => g.name} onPick={(id) => onNavigate("grids", id)} />
             <PinnedGroup
               label="Sessions"
               items={pinnedSessions}
