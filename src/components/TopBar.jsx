@@ -9,6 +9,8 @@ const TABS = [
   { id: "factions", label: "Factions" },
   { id: "locations", label: "Locations" },
   { id: "items", label: "Items" },
+  { id: "monsters", label: "Bestiary" },
+  { id: "grids", label: "Battle Grids" },
   { id: "quests", label: "Quests" },
   { id: "sessions", label: "Sessions" },
   { id: "tags", label: "Tags" },

@@ -12,7 +12,8 @@ export default function TagBrowserPanel({ campaign, onNavigate }) {
 
   const usage = new Map();
   const bump = (tag, key, item) => {
-    if (!usage.has(tag)) usage.set(tag, { npcs: [], locations: [], quests: [], sessions: [], factions: [], pcs: [] });
+    if (!usage.has(tag))
+      usage.set(tag, { npcs: [], locations: [], quests: [], sessions: [], factions: [], pcs: [], monsters: [], grids: [] });
     usage.get(tag)[key].push(item);
   };
   campaign.npcs.forEach((n) => (n.tags || []).forEach((t) => bump(t, "npcs", n)));
@@ -21,6 +22,8 @@ export default function TagBrowserPanel({ campaign, onNavigate }) {
   campaign.sessions.forEach((s) => (s.tags || []).forEach((t) => bump(t, "sessions", s)));
   campaign.factions.forEach((f) => (f.tags || []).forEach((t) => bump(t, "factions", f)));
   campaign.pcs.forEach((p) => (p.tags || []).forEach((t) => bump(t, "pcs", p)));
+  campaign.monsters.forEach((m) => (m.tags || []).forEach((t) => bump(t, "monsters", m)));
+  campaign.grids.forEach((g) => (g.tags || []).forEach((t) => bump(t, "grids", g)));
 
   const tags = Array.from(usage.keys())
     .filter((t) => t.toLowerCase().includes(search.trim().toLowerCase()))
@@ -49,7 +52,15 @@ export default function TagBrowserPanel({ campaign, onNavigate }) {
           <div className="cf-chip-row" style={{ marginBottom: 20 }}>
             {tags.map((t) => {
               const u = usage.get(t);
-              const total = u.npcs.length + u.locations.length + u.quests.length + u.sessions.length + u.factions.length + u.pcs.length;
+              const total =
+                u.npcs.length +
+                u.locations.length +
+                u.quests.length +
+                u.sessions.length +
+                u.factions.length +
+                u.pcs.length +
+                u.monsters.length +
+                u.grids.length;
               return (
                 <button
                   key={t}
@@ -69,6 +80,8 @@ export default function TagBrowserPanel({ campaign, onNavigate }) {
               <TagBrowserGroup label="Party" items={group.pcs} nameOf={(p) => p.name} onPick={(id) => onNavigate("pcs", id)} />
               <TagBrowserGroup label="Factions" items={group.factions} nameOf={(f) => f.name} onPick={(id) => onNavigate("factions", id)} />
               <TagBrowserGroup label="Locations" items={group.locations} nameOf={(l) => l.name} onPick={(id) => onNavigate("locations", id)} />
+              <TagBrowserGroup label="Bestiary" items={group.monsters} nameOf={(m) => m.name} onPick={(id) => onNavigate("monsters", id)} />
+              <TagBrowserGroup label="Battle Grids" items={group.grids} nameOf={(g) => g.name} onPick={(id) => onNavigate("grids", id)} />
               <TagBrowserGroup label="Quests" items={group.quests} nameOf={(q) => q.title} onPick={(id) => onNavigate("quests", id)} />
               <TagBrowserGroup
                 label="Sessions"

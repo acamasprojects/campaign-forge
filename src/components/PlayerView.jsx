@@ -44,7 +44,13 @@ export default function PlayerView({ campaign, onClose }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [selected, onClose]);
 
-  const scored = useMemo(() => scoreCampaign(campaign, query), [campaign, query]);
+  // scoreCampaign also scores monsters/grids (for the DM-facing top bar quick
+  // search) — excluded here since this view is meant to be handed to the
+  // table and monster stat blocks/encounter setups are spoilers.
+  const scored = useMemo(
+    () => scoreCampaign(campaign, query).filter((r) => r.type !== "monsters" && r.type !== "grids"),
+    [campaign, query]
+  );
   const q = query.trim();
   const results = q ? scored.filter((r) => r.score > 0).sort((a, b) => b.score - a.score) : [];
   const suggestions = q && results.length === 0 ? suggestClosest(query, scored.map((r) => r.label)) : [];
@@ -425,6 +431,12 @@ function PcDetail({ pc, campaign, onJump }) {
         {pc.playerName && <span className="cf-badge">Played by {pc.playerName}</span>}
         {pc.classLevel && <span className="cf-badge cf-badge-muted">{pc.classLevel}</span>}
         {pc.race && <span className="cf-badge cf-badge-muted">{pc.race}</span>}
+        {pc.armorClass != null && <span className="cf-badge cf-badge-muted">AC {pc.armorClass}</span>}
+        {pc.hitPoints != null && pc.maxHitPoints != null && (
+          <span className="cf-badge cf-badge-muted">
+            {pc.hitPoints}/{pc.maxHitPoints} HP
+          </span>
+        )}
         {pc.status && pc.status !== "active" && <span className="cf-badge">{titleCase(pc.status)}</span>}
       </div>
       <Field label="Hometown">

@@ -204,7 +204,13 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
                     {p.status}
                   </span>
                 }
-                meta={<span className="cf-card-submeta">{p.playerName ? `played by ${p.playerName}` : ""}</span>}
+                meta={
+                  <span className="cf-card-submeta">
+                    {p.armorClass != null ? `AC ${p.armorClass}` : ""}
+                    {p.hitPoints != null && p.maxHitPoints != null ? `${p.armorClass != null ? " · " : ""}${p.hitPoints}/${p.maxHitPoints} hp` : ""}
+                    {p.playerName ? `${p.armorClass != null || p.hitPoints != null ? " · " : ""}played by ${p.playerName}` : ""}
+                  </span>
+                }
                 matchNote={matchNoteFor(p.id)}
               >
                 <div className="cf-form-grid">
@@ -223,6 +229,35 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
                   <label className="cf-field">
                     <span className="cf-field-label">Race</span>
                     <input className="cf-input" value={p.race} onChange={(e) => setField(p.id, "race", e.target.value)} placeholder="Wood elf" />
+                  </label>
+                  <label className="cf-field">
+                    <span className="cf-field-label">Armor Class</span>
+                    <input
+                      className="cf-input"
+                      type="number"
+                      value={p.armorClass ?? ""}
+                      onChange={(e) => setField(p.id, "armorClass", e.target.value === "" ? null : Number(e.target.value))}
+                      placeholder="16"
+                    />
+                  </label>
+                  <label className="cf-field">
+                    <span className="cf-field-label">Hit Points</span>
+                    <div className="cf-inline-fields">
+                      <input
+                        className="cf-input cf-input-narrow"
+                        type="number"
+                        value={p.hitPoints ?? ""}
+                        onChange={(e) => setField(p.id, "hitPoints", e.target.value === "" ? null : Number(e.target.value))}
+                        placeholder="current"
+                      />
+                      <input
+                        className="cf-input cf-input-narrow"
+                        type="number"
+                        value={p.maxHitPoints ?? ""}
+                        onChange={(e) => setField(p.id, "maxHitPoints", e.target.value === "" ? null : Number(e.target.value))}
+                        placeholder="max"
+                      />
+                    </div>
                   </label>
                 </div>
 
