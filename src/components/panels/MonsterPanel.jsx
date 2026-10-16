@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { emptyMonster, MONSTER_TYPES, MONSTER_SIZES, CHALLENGE_RATINGS, ABILITY_KEYS } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
@@ -81,7 +81,10 @@ export default function MonsterPanel({ campaign, update, flash, focusId, onConsu
     (!pinnedOnly || m.pinned) &&
     hasAllTags(m.tags, activeTags);
 
-  const results = searchAndFilter(campaign.monsters, { search, fieldsFn: fieldsFor, extraFilter });
+  const results = useMemo(
+    () => searchAndFilter(campaign.monsters, { search, fieldsFn: fieldsFor, extraFilter }),
+    [campaign, search, activeTypes, activeSizes, activeTags, pinnedOnly]
+  );
   const filtered = SORT_COMPARATORS[sortMode]
     ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
     : results.map((r) => r.item);
