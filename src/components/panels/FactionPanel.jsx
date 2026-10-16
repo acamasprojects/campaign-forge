@@ -111,11 +111,14 @@ export default function FactionPanel({ campaign, update, flash, focusId, onConsu
   };
 
   const removeFaction = (id) => {
+    const faction = campaign.factions.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.factions = c.factions.filter((f) => f.id !== id).map((f) => ({ ...f, rivalFactionIds: f.rivalFactionIds.filter((x) => x !== id) }));
       c.npcs = c.npcs.map((n) => (n.factionId === id ? { ...n, factionId: null } : n));
       return c;
     });
+    flash(`${faction?.name || "Faction"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   return (

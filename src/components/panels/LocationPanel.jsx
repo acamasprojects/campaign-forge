@@ -6,6 +6,7 @@ import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
 import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
+import ImageUpload from "../ImageUpload.jsx";
 
 const SORT_OPTIONS = [
   { value: "relevance", label: "Relevance" },
@@ -109,6 +110,8 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
   };
 
   const removeLocation = (id) => {
+    const location = campaign.locations.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.locations = c.locations.filter((l) => l.id !== id);
       c.locations = c.locations.map((l) => (l.parentId === id ? { ...l, parentId: null } : l));
@@ -121,6 +124,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
       c.grids = c.grids.map((g) => (g.locationId === id ? { ...g, locationId: null } : g));
       return c;
     });
+    flash(`${location?.name || "Location"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   return (
@@ -182,6 +186,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
               <EntityCard
                 key={l.id}
                 cardRef={(el) => (cardRefs.current[l.id] = el)}
+                thumbnail={l.portraitUrl}
                 title={l.name}
                 expanded={expanded}
                 onToggle={() => setExpandedId(expanded ? null : l.id)}
@@ -204,6 +209,10 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
                     <span className="cf-field-label">Name</span>
                     <input className="cf-input" value={l.name} onChange={(e) => setField(l.id, "name", e.target.value)} placeholder="Ravenhollow" />
                   </label>
+                  <div className="cf-field">
+                    <span className="cf-field-label">Portrait</span>
+                    <ImageUpload value={l.portraitUrl} onChange={(url) => setField(l.id, "portraitUrl", url)} />
+                  </div>
                 </div>
 
                 <div className="cf-field">
