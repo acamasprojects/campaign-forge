@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { emptyBattleGrid } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
@@ -56,7 +56,10 @@ export default function BattleGridPanel({ campaign, update, flash, focusId, onCo
 
   const extraFilter = (g) => (!pinnedOnly || g.pinned) && hasAllTags(g.tags, activeTags);
 
-  const results = searchAndFilter(campaign.grids, { search, fieldsFn: fieldsFor, extraFilter });
+  const results = useMemo(
+    () => searchAndFilter(campaign.grids, { search, fieldsFn: fieldsFor, extraFilter }),
+    [campaign, search, activeTags, pinnedOnly]
+  );
   const filtered = SORT_COMPARATORS[sortMode]
     ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
     : results.map((r) => r.item);

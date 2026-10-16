@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { emptyItem, ITEM_TYPES, ITEM_RARITIES } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
@@ -90,7 +90,10 @@ export default function ItemPanel({ campaign, update, flash, focusId, onConsumeF
     (!pinnedOnly || i.pinned) &&
     hasAllTags(i.tags, activeTags);
 
-  const results = searchAndFilter(campaign.items, { search, fieldsFn: fieldsFor, extraFilter });
+  const results = useMemo(
+    () => searchAndFilter(campaign.items, { search, fieldsFn: fieldsFor, extraFilter }),
+    [campaign, search, activeTypes, activeRarities, activeTags, pinnedOnly]
+  );
   const filtered = SORT_COMPARATORS[sortMode]
     ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
     : results.map((r) => r.item);

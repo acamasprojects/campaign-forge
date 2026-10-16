@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { emptyFaction, DISPOSITIONS } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
@@ -74,7 +74,10 @@ export default function FactionPanel({ campaign, update, flash, focusId, onConsu
   const extraFilter = (f) =>
     (activeStandings.length === 0 || activeStandings.includes(f.standing)) && (!pinnedOnly || f.pinned) && hasAllTags(f.tags, activeTags);
 
-  const results = searchAndFilter(campaign.factions, { search, fieldsFn: fieldsFor, extraFilter });
+  const results = useMemo(
+    () => searchAndFilter(campaign.factions, { search, fieldsFn: fieldsFor, extraFilter }),
+    [campaign, search, activeStandings, activeTags, pinnedOnly]
+  );
   const filtered = SORT_COMPARATORS[sortMode]
     ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
     : results.map((r) => r.item);

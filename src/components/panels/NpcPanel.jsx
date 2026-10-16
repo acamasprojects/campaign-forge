@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { emptyNpc, emptyRelationship, DISPOSITIONS, NPC_STATUSES } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
@@ -120,7 +120,13 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
     (!pinnedOnly || n.pinned) &&
     hasAllTags(n.tags, activeTags);
 
-  const results = searchAndFilter(campaign.npcs, { search, fieldsFn: fieldsFor, extraFilter });
+  // fieldsFor() does real cross-array scanning per npc (quests, sessions,
+  // connected PCs), so this is memoized to avoid redoing it on renders that
+  // have nothing to do with search — expanding/collapsing a card, for one.
+  const results = useMemo(
+    () => searchAndFilter(campaign.npcs, { search, fieldsFn: fieldsFor, extraFilter }),
+    [campaign, search, activeDispositions, activeStatuses, activeLocations, activeFactions, activeTags, pinnedOnly]
+  );
   const filtered = SORT_COMPARATORS[sortMode]
     ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
     : results.map((r) => r.item);

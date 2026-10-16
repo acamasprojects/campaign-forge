@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { emptySession } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
@@ -65,7 +65,10 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
 
   const extraFilter = (s) => (!pinnedOnly || s.pinned) && hasAllTags(s.tags, activeTags);
 
-  const results = searchAndFilter(campaign.sessions, { search, fieldsFn: fieldsFor, extraFilter });
+  const results = useMemo(
+    () => searchAndFilter(campaign.sessions, { search, fieldsFn: fieldsFor, extraFilter }),
+    [campaign, search, activeTags, pinnedOnly]
+  );
   const filtered = SORT_COMPARATORS[sortMode]
     ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
     : results.map((r) => r.item);

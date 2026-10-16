@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { emptyPc, emptyRelationship, PC_STATUSES } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
@@ -75,7 +75,10 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
   const extraFilter = (p) =>
     (activeStatuses.length === 0 || activeStatuses.includes(p.status)) && (!pinnedOnly || p.pinned) && hasAllTags(p.tags, activeTags);
 
-  const results = searchAndFilter(campaign.pcs, { search, fieldsFn: fieldsFor, extraFilter });
+  const results = useMemo(
+    () => searchAndFilter(campaign.pcs, { search, fieldsFn: fieldsFor, extraFilter }),
+    [campaign, search, activeStatuses, activeTags, pinnedOnly]
+  );
   const filtered = SORT_COMPARATORS[sortMode]
     ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
     : results.map((r) => r.item);

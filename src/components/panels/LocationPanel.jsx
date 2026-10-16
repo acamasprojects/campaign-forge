@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { emptyLocation, LOCATION_TYPES } from "../../data/model.js";
 import { searchAndFilter, suggestClosest, hasAllTags, collectTags } from "../../utils/search.js";
 import EntityCard from "../EntityCard.jsx";
@@ -72,7 +72,10 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
   const extraFilter = (l) =>
     (activeTypes.length === 0 || activeTypes.includes(l.type)) && (!pinnedOnly || l.pinned) && hasAllTags(l.tags, activeTags);
 
-  const results = searchAndFilter(campaign.locations, { search, fieldsFn: fieldsFor, extraFilter });
+  const results = useMemo(
+    () => searchAndFilter(campaign.locations, { search, fieldsFn: fieldsFor, extraFilter }),
+    [campaign, search, activeTypes, activeTags, pinnedOnly]
+  );
   const filtered = SORT_COMPARATORS[sortMode]
     ? results.map((r) => r.item).sort(SORT_COMPARATORS[sortMode])
     : results.map((r) => r.item);
