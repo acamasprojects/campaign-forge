@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { printPrepSheet } from "../../utils/printPrepSheet.js";
 
 /**
@@ -5,7 +6,7 @@ import { printPrepSheet } from "../../utils/printPrepSheet.js";
  * session — the last recap, what's still active, the party, and whatever's
  * pinned — without hunting across every tab first.
  */
-export default function DashboardPanel({ campaign, onNavigate }) {
+export default function DashboardPanel({ campaign, update, onNavigate }) {
   const lastSession = campaign.sessions.reduce(
     (best, s) => (!best || (s.sessionNumber || 0) > (best.sessionNumber || 0) ? s : best),
     null
@@ -54,6 +55,7 @@ export default function DashboardPanel({ campaign, onNavigate }) {
   if (isEmpty) {
     return (
       <div className="cf-panel">
+        <CurrentDateField campaign={campaign} update={update} />
         <div className="cf-empty-panel">
           Nothing in this campaign yet. Start adding NPCs, Locations, and Quests — this dashboard will
           fill in with your active threads and pinned favorites as you go.
@@ -71,6 +73,8 @@ export default function DashboardPanel({ campaign, onNavigate }) {
         </button>
       </div>
 
+      <CurrentDateField campaign={campaign} update={update} />
+
       <div className="cf-dashboard-section">
         <h3 className="cf-dashboard-heading">Last Session</h3>
         {lastSession ? (
@@ -81,6 +85,7 @@ export default function DashboardPanel({ campaign, onNavigate }) {
                 {lastSession.title ? `: ${lastSession.title}` : ""}
               </span>
               <span className="cf-badge cf-badge-muted">{lastSession.date}</span>
+              {lastSession.inWorldDate && <span className="cf-badge">{lastSession.inWorldDate}</span>}
             </div>
             {lastSession.summary && (
               <p className="cf-dashboard-recap-body">
@@ -154,6 +159,50 @@ export default function DashboardPanel({ campaign, onNavigate }) {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Click-to-edit in-world date, same pattern as the campaign title in
+ * TopBar — any calendar works since it's just freeform text, no date math. */
+function CurrentDateField({ campaign, update }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        className="cf-input cf-dashboard-date-input"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          update((c) => ({ ...c, currentDate: draft.trim() }));
+          setEditing(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.target.blur();
+          if (e.key === "Escape") setEditing(false);
+        }}
+        placeholder="15th of Hammer, 1492 DR"
+      />
+    );
+  }
+
+  return (
+    <div
+      className="cf-dashboard-date"
+      onClick={() => {
+        setDraft(campaign.currentDate || "");
+        setEditing(true);
+      }}
+      title="Click to set the in-world date"
+    >
+      {campaign.currentDate ? (
+        <>📅 {campaign.currentDate}</>
+      ) : (
+        <span className="cf-dashboard-date-empty">+ Set the in-world date</span>
+      )}
     </div>
   );
 }

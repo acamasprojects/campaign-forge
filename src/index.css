@@ -473,6 +473,16 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
 .cf-dice-history-detail { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-faint); flex: 1; }
 .cf-dice-history-total { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--blood-2); }
 
+/* ---------- in-world calendar ---------- */
+.cf-dashboard-date {
+  display: inline-block; font-family: var(--font-display); font-size: 14px; color: var(--text-bright);
+  border: 1px dashed var(--border-2); border-radius: 2px; padding: 6px 12px; margin-bottom: 20px; cursor: pointer;
+}
+.cf-dashboard-date:hover { border-color: var(--blood); }
+.cf-dashboard-date-empty { color: var(--text-faint); font-style: italic; }
+.cf-dashboard-date-input { max-width: 320px; margin-bottom: 20px; }
+.cf-playerview-date { font-size: 12.5px; color: var(--text-faint); margin-top: 2px; }
+
 /* ---------- toast ---------- */
 .cf-toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);

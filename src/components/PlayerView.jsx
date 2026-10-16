@@ -69,7 +69,10 @@ export default function PlayerView({ campaign, onClose }) {
   return (
     <div className="cf-playerview">
       <div className="cf-playerview-header">
-        <div className="cf-playerview-title">🎭 {campaign.name} — Player View</div>
+        <div>
+          <div className="cf-playerview-title">🎭 {campaign.name} — Player View</div>
+          {campaign.currentDate && <div className="cf-playerview-date">📅 {campaign.currentDate}</div>}
+        </div>
         <button type="button" className="cf-btn cf-btn-ghost" onClick={onClose}>
           Close ✕
         </button>

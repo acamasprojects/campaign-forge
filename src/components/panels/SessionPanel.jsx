@@ -55,6 +55,7 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
     { value: `session ${s.sessionNumber}`, weight: 2, label: "session number" },
     { value: s.title, weight: 3, label: "title" },
     { value: s.date, weight: 1, label: "date" },
+    { value: s.inWorldDate, weight: 1, label: "in-world date" },
     { value: (s.tags || []).join(" "), weight: 2, label: "tags" },
     { value: s.summary, weight: 1, label: "summary" },
     { value: namesOf(npcOptions, s.relatedNpcIds), weight: 1, label: "NPCs" },
@@ -167,7 +168,12 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
                 }}
                 pinned={s.pinned}
                 onTogglePin={() => setField(s.id, "pinned", !s.pinned)}
-                badges={<span className="cf-badge cf-badge-muted">{s.date}</span>}
+                badges={
+                  <>
+                    <span className="cf-badge cf-badge-muted">{s.date}</span>
+                    {s.inWorldDate && <span className="cf-badge">{s.inWorldDate}</span>}
+                  </>
+                }
                 matchNote={matchNoteFor(s.id)}
               >
                 <div className="cf-form-grid">
@@ -181,8 +187,17 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
                     />
                   </label>
                   <label className="cf-field">
-                    <span className="cf-field-label">Date</span>
+                    <span className="cf-field-label">Date played</span>
                     <input type="date" className="cf-input" value={s.date} onChange={(e) => setField(s.id, "date", e.target.value)} />
+                  </label>
+                  <label className="cf-field">
+                    <span className="cf-field-label">In-world date</span>
+                    <input
+                      className="cf-input"
+                      value={s.inWorldDate}
+                      onChange={(e) => setField(s.id, "inWorldDate", e.target.value)}
+                      placeholder="15th of Hammer, 1492 DR"
+                    />
                   </label>
                   <label className="cf-field cf-field-wide">
                     <span className="cf-field-label">Title</span>

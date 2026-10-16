@@ -121,7 +121,7 @@ export default function App() {
               onOpenDiceRoller={() => setDiceRollerOpen(true)}
             />
             <div className="cf-content">
-              {tab === "home" && <DashboardPanel campaign={store.current} onNavigate={onNavigate} />}
+              {tab === "home" && <DashboardPanel campaign={store.current} update={store.updateCurrent} onNavigate={onNavigate} />}
               {tab === "npcs" && (
                 <NpcPanel
                   campaign={store.current}

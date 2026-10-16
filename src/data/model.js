@@ -60,6 +60,7 @@ export const emptyCampaign = (name) => ({
   id: uid(),
   name: name || "Untitled Campaign",
   createdAt: Date.now(),
+  currentDate: "", // freeform in-world date, e.g. "15th of Hammer, 1492 DR" — any calendar, no date-math assumed
   npcs: [],
   locations: [],
   quests: [],
@@ -124,7 +125,8 @@ export const emptyQuest = () => ({
 export const emptySession = (nextNumber) => ({
   id: uid(),
   sessionNumber: nextNumber || 1,
-  date: new Date().toISOString().slice(0, 10),
+  date: new Date().toISOString().slice(0, 10), // real-world date this was played
+  inWorldDate: "", // freeform in-world date this session covered, e.g. "15th of Hammer, 1492 DR"
   title: "",
   summary: "",
   relatedNpcIds: [],
@@ -265,6 +267,7 @@ export const normalizeCampaign = (c) => ({
   id: c.id || uid(),
   name: c.name || "Untitled Campaign",
   createdAt: c.createdAt || Date.now(),
+  currentDate: c.currentDate || "",
   npcs: (c.npcs || []).map((n) => ({
     ...n,
     id: n.id || uid(),
@@ -316,6 +319,7 @@ export const normalizeCampaign = (c) => ({
     id: s.id || uid(),
     sessionNumber: s.sessionNumber || 1,
     date: s.date || new Date().toISOString().slice(0, 10),
+    inWorldDate: s.inWorldDate || "",
     title: s.title || "",
     summary: s.summary || "",
     relatedNpcIds: s.relatedNpcIds || [],
