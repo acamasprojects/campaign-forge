@@ -12,6 +12,10 @@ export function useCampaignStore() {
   const [campaigns, setCampaigns] = useState([]);
   const [currentId, setCurrentId] = useState(null);
   const saveTimer = useRef(null);
+  // Mirrors the latest campaigns/currentId so the exit-flush listener (set up
+  // once, below) always sees current data instead of whatever was in scope
+  // when it was registered.
+  const latest = useRef({ campaigns, currentId });
 
   useEffect(() => {
     try {
@@ -27,24 +31,58 @@ export function useCampaignStore() {
     setLoaded(true);
   }, []);
 
-  const persist = useCallback((nextCampaigns, nextCurrentId) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      try {
-        localStorage.setItem(
-          STORE_KEY,
-          JSON.stringify({ campaigns: nextCampaigns, currentId: nextCurrentId })
-        );
-      } catch (e) {
-        console.error("Campaign Forge: failed to save", e);
-      }
-    }, 300);
+  const writeNow = useCallback((nextCampaigns, nextCurrentId) => {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ campaigns: nextCampaigns, currentId: nextCurrentId }));
+    } catch (e) {
+      console.error("Campaign Forge: failed to save", e);
+    }
   }, []);
+
+  const persist = useCallback(
+    (nextCampaigns, nextCurrentId) => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => writeNow(nextCampaigns, nextCurrentId), 300);
+    },
+    [writeNow]
+  );
+
+  useEffect(() => {
+    latest.current = { campaigns, currentId };
+  }, [campaigns, currentId]);
 
   useEffect(() => {
     if (!loaded) return;
     persist(campaigns, currentId);
   }, [campaigns, currentId, loaded, persist]);
+
+  // The debounce above means an edit can sit unsaved for up to 300ms, and
+  // typing continuously keeps pushing that window back. Closing the tab (or
+  // the browser crashing) inside that window loses whatever hasn't saved
+  // yet. Flush immediately once the tab is actually going away: 'pagehide'
+  // covers navigation/close, 'visibilitychange' covers backgrounding (tab
+  // switch, app switch, phone lock) — together they catch far more exit
+  // paths than 'beforeunload' alone, which mobile Safari doesn't fire
+  // reliably. Only flushes if a save was actually pending, so this can't
+  // overwrite real data with the empty initial state before the load effect
+  // above has run.
+  useEffect(() => {
+    const flush = () => {
+      if (!saveTimer.current) return;
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+      writeNow(latest.current.campaigns, latest.current.currentId);
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pagehide", flush);
+    };
+  }, [writeNow]);
 
   const current = campaigns.find((c) => c.id === currentId) || null;
 
