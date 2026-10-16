@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar.jsx";
 import TopBar from "./components/TopBar.jsx";
 import TagManagerModal from "./components/TagManagerModal.jsx";
 import PlayerView from "./components/PlayerView.jsx";
+import DiceRollerModal from "./components/DiceRollerModal.jsx";
 import NpcPanel from "./components/panels/NpcPanel.jsx";
 import PcPanel from "./components/panels/PcPanel.jsx";
 import FactionPanel from "./components/panels/FactionPanel.jsx";
@@ -24,6 +25,7 @@ export default function App() {
   const [focus, setFocus] = useState(null); // { type, id } | null
   const [tagManagerOpen, setTagManagerOpen] = useState(false);
   const [playerViewOpen, setPlayerViewOpen] = useState(false);
+  const [diceRollerOpen, setDiceRollerOpen] = useState(false);
 
   const flash = (msg) => {
     setToast(msg);
@@ -111,6 +113,7 @@ export default function App() {
               onNavigate={onNavigate}
               renameCampaign={store.renameCampaign}
               onOpenPlayerView={() => setPlayerViewOpen(true)}
+              onOpenDiceRoller={() => setDiceRollerOpen(true)}
             />
             <div className="cf-content">
               {tab === "home" && <DashboardPanel campaign={store.current} onNavigate={onNavigate} />}
@@ -213,6 +216,7 @@ export default function App() {
       {playerViewOpen && store.current && (
         <PlayerView campaign={store.current} onClose={() => setPlayerViewOpen(false)} />
       )}
+      {diceRollerOpen && <DiceRollerModal onClose={() => setDiceRollerOpen(false)} />}
       {tagManagerOpen && store.current && (
         <TagManagerModal
           campaign={store.current}

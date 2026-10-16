@@ -17,7 +17,7 @@ const TABS = [
 ];
 
 /** Top bar: campaign title, tab nav, and a global quick-search across all three lists. */
-export default function TopBar({ tab, setTab, campaign, onNavigate, renameCampaign, onOpenPlayerView }) {
+export default function TopBar({ tab, setTab, campaign, onNavigate, renameCampaign, onOpenPlayerView, onOpenDiceRoller }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
@@ -140,6 +140,9 @@ export default function TopBar({ tab, setTab, campaign, onNavigate, renameCampai
           </button>
         ))}
       </nav>
+      <button type="button" className="cf-btn cf-btn-ghost cf-btn-small" onClick={onOpenDiceRoller} title="Roll some dice">
+        🎲 Dice
+      </button>
       <button type="button" className="cf-btn cf-btn-ghost cf-btn-small" onClick={onOpenPlayerView} title="Full-screen search view for the table">
         🎭 Player View
       </button>
