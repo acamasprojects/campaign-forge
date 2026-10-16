@@ -1,5 +1,9 @@
 // ---------- id + factory helpers ----------
-export const uid = () => Math.random().toString(36).slice(2, 10);
+// crypto.randomUUID() is a built-in browser API (no dependency needed) and
+// gives 122 bits of real entropy, versus the ~41 bits a Math.random() string
+// had — worth the swap since every id in the app, across every entity type,
+// drew from that same shared keyspace with no collision check.
+export const uid = () => crypto.randomUUID();
 
 export const DISPOSITIONS = ["friendly", "neutral", "hostile", "unknown"];
 export const NPC_STATUSES = ["alive", "missing", "captured", "dead"];
