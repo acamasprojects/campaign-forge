@@ -6,6 +6,7 @@ import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
 import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
+import ImageUpload from "../ImageUpload.jsx";
 
 const DISPOSITION_COLOR = {
   friendly: "#55704A",
@@ -293,6 +294,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
               <EntityCard
                 key={n.id}
                 cardRef={(el) => (cardRefs.current[n.id] = el)}
+                thumbnail={n.portraitUrl}
                 title={n.name}
                 expanded={expanded}
                 onToggle={() => setExpandedId(expanded ? null : n.id)}
@@ -343,6 +345,10 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                       onChange={(id) => setField(n.id, "factionId", id)}
                       placeholder="Link a faction…"
                     />
+                  </div>
+                  <div className="cf-field">
+                    <span className="cf-field-label">Portrait</span>
+                    <ImageUpload value={n.portraitUrl} onChange={(url) => setField(n.id, "portraitUrl", url)} />
                   </div>
                 </div>
 

@@ -1,10 +1,11 @@
 /** Shared collapsible card shell used by NPC, Location, Quest, and Session cards. */
-export default function EntityCard({ title, meta, badges, matchNote, pinned, onTogglePin, expanded, onToggle, onDelete, children, cardRef }) {
+export default function EntityCard({ title, thumbnail, meta, badges, matchNote, pinned, onTogglePin, expanded, onToggle, onDelete, children, cardRef }) {
   return (
     <div className={`cf-card${expanded ? " cf-card-expanded" : ""}${pinned ? " cf-card-pinned" : ""}`} ref={cardRef}>
       <div className="cf-card-head" onClick={onToggle}>
         <div className="cf-card-head-main">
           <span className="cf-card-chevron">{expanded ? "▾" : "▸"}</span>
+          {thumbnail && <img src={thumbnail} alt="" className="cf-card-thumbnail" />}
           {onTogglePin && (
             <button
               type="button"

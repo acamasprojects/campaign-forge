@@ -6,6 +6,7 @@ import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
 import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
+import ImageUpload from "../ImageUpload.jsx";
 
 const SORT_OPTIONS = [
   { value: "relevance", label: "Relevance" },
@@ -182,6 +183,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
               <EntityCard
                 key={l.id}
                 cardRef={(el) => (cardRefs.current[l.id] = el)}
+                thumbnail={l.portraitUrl}
                 title={l.name}
                 expanded={expanded}
                 onToggle={() => setExpandedId(expanded ? null : l.id)}
@@ -204,6 +206,10 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
                     <span className="cf-field-label">Name</span>
                     <input className="cf-input" value={l.name} onChange={(e) => setField(l.id, "name", e.target.value)} placeholder="Ravenhollow" />
                   </label>
+                  <div className="cf-field">
+                    <span className="cf-field-label">Portrait</span>
+                    <ImageUpload value={l.portraitUrl} onChange={(url) => setField(l.id, "portraitUrl", url)} />
+                  </div>
                 </div>
 
                 <div className="cf-field">
