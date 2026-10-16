@@ -60,6 +60,17 @@ export default function App() {
           ? [parsed]
           : [];
         if (incoming.length === 0) throw new Error("No campaigns found in file");
+        // Only the campaign-level id gets regenerated here — every nested
+        // npc/location/quest/etc. id is kept exactly as it was in the file.
+        // That's fine today, since nothing looks up an entity across
+        // campaigns, so having the same nested id show up in two different
+        // campaigns causes no visible bug. It'd matter the moment any
+        // feature assumes entity ids are globally unique (cross-campaign
+        // search, copying an entity between campaigns, merging two
+        // campaigns) — re-importing this exact file while the original
+        // campaign still exists would produce a second campaign whose
+        // nested entities are byte-identical in id to the first. Known,
+        // deliberately not fixed — see the linked issue if that changes.
         const withNewIds = incoming.map((c) => ({ ...c, id: uid() }));
         withNewIds.forEach((c) => store.importCampaign(c));
         flash(`Imported ${withNewIds.length} campaign${withNewIds.length === 1 ? "" : "s"}`);
