@@ -104,10 +104,13 @@ export default function SessionPanel({ campaign, update, flash, focusId, onConsu
   };
 
   const removeSession = (id) => {
+    const session = campaign.sessions.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.sessions = c.sessions.filter((s) => s.id !== id);
       return c;
     });
+    flash(`Session ${session?.sessionNumber ?? ""} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   return (

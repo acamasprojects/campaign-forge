@@ -93,10 +93,13 @@ export default function BattleGridPanel({ campaign, update, flash, focusId, onCo
   };
 
   const removeGrid = (id) => {
+    const grid = campaign.grids.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.grids = c.grids.filter((g) => g.id !== id);
       return c;
     });
+    flash(`${grid?.name || "Battle grid"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   const openGrid = campaign.grids.find((g) => g.id === openGridId) || null;

@@ -229,6 +229,7 @@ function NpcDetail({ npc, campaign, onJump }) {
 
   return (
     <>
+      {npc.portraitUrl && <img src={npc.portraitUrl} alt="" className="cf-playerview-portrait" />}
       <h2 className="cf-playerview-detail-title">{npc.name || "Untitled"}</h2>
       <div className="cf-playerview-detail-meta">
         {npc.role && <span className="cf-badge">{npc.role}</span>}
@@ -297,6 +298,7 @@ function LocationDetail({ location, campaign, onJump }) {
 
   return (
     <>
+      {location.portraitUrl && <img src={location.portraitUrl} alt="" className="cf-playerview-portrait" />}
       <h2 className="cf-playerview-detail-title">{location.name || "Untitled"}</h2>
       <div className="cf-playerview-detail-meta">
         <span className="cf-badge">{titleCase(location.type)}</span>
@@ -429,6 +431,7 @@ function PcDetail({ pc, campaign, onJump }) {
 
   return (
     <>
+      {pc.portraitUrl && <img src={pc.portraitUrl} alt="" className="cf-playerview-portrait" />}
       <h2 className="cf-playerview-detail-title">{pc.name || "Untitled"}</h2>
       <div className="cf-playerview-detail-meta">
         {pc.playerName && <span className="cf-badge">Played by {pc.playerName}</span>}

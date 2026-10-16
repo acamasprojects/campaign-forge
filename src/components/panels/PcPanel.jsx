@@ -6,6 +6,7 @@ import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
 import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
+import ImageUpload from "../ImageUpload.jsx";
 
 const PC_STATUS_COLOR = {
   active: "#55704A",
@@ -113,6 +114,7 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
 
   const removePc = (id) => {
     const pc = campaign.pcs.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.pcs = c.pcs.filter((p) => p.id !== id);
       c.quests = c.quests.map((q) => ({ ...q, relatedPcIds: q.relatedPcIds.filter((x) => x !== id) }));
@@ -128,6 +130,7 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
       }));
       return c;
     });
+    flash(`${pc?.name || "PC"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   const addRelationship = (pcId) => {
@@ -203,6 +206,7 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
               <EntityCard
                 key={p.id}
                 cardRef={(el) => (cardRefs.current[p.id] = el)}
+                thumbnail={p.portraitUrl}
                 title={p.name}
                 expanded={expanded}
                 onToggle={() => setExpandedId(expanded ? null : p.id)}
@@ -242,6 +246,10 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
                     <span className="cf-field-label">Race</span>
                     <input className="cf-input" value={p.race} onChange={(e) => setField(p.id, "race", e.target.value)} placeholder="Wood elf" />
                   </label>
+                  <div className="cf-field">
+                    <span className="cf-field-label">Portrait</span>
+                    <ImageUpload value={p.portraitUrl} onChange={(url) => setField(p.id, "portraitUrl", url)} />
+                  </div>
                   <label className="cf-field">
                     <span className="cf-field-label">Armor Class</span>
                     <input

@@ -131,11 +131,14 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
   };
 
   const removeQuest = (id) => {
+    const quest = campaign.quests.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.quests = c.quests.filter((q) => q.id !== id);
       c.sessions = c.sessions.map((s) => ({ ...s, relatedQuestIds: (s.relatedQuestIds || []).filter((x) => x !== id) }));
       return c;
     });
+    flash(`${quest?.title || "Quest"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   const addClue = (questId) => {

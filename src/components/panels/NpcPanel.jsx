@@ -6,6 +6,7 @@ import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
 import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
+import ImageUpload from "../ImageUpload.jsx";
 
 const DISPOSITION_COLOR = {
   friendly: "#55704A",
@@ -161,6 +162,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
 
   const removeNpc = (id) => {
     const npc = campaign.npcs.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.npcs = c.npcs
         .filter((n) => n.id !== id)
@@ -186,6 +188,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
       }));
       return c;
     });
+    flash(`${npc?.name || "NPC"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   const addRelationship = (npcId) => {
@@ -293,6 +296,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
               <EntityCard
                 key={n.id}
                 cardRef={(el) => (cardRefs.current[n.id] = el)}
+                thumbnail={n.portraitUrl}
                 title={n.name}
                 expanded={expanded}
                 onToggle={() => setExpandedId(expanded ? null : n.id)}
@@ -343,6 +347,10 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
                       onChange={(id) => setField(n.id, "factionId", id)}
                       placeholder="Link a faction…"
                     />
+                  </div>
+                  <div className="cf-field">
+                    <span className="cf-field-label">Portrait</span>
+                    <ImageUpload value={n.portraitUrl} onChange={(url) => setField(n.id, "portraitUrl", url)} />
                   </div>
                 </div>
 
