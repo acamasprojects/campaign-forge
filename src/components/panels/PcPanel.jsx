@@ -114,6 +114,7 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
 
   const removePc = (id) => {
     const pc = campaign.pcs.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.pcs = c.pcs.filter((p) => p.id !== id);
       c.quests = c.quests.map((q) => ({ ...q, relatedPcIds: q.relatedPcIds.filter((x) => x !== id) }));
@@ -129,6 +130,7 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
       }));
       return c;
     });
+    flash(`${pc?.name || "PC"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   const addRelationship = (pcId) => {

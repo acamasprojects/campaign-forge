@@ -162,6 +162,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
 
   const removeNpc = (id) => {
     const npc = campaign.npcs.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.npcs = c.npcs
         .filter((n) => n.id !== id)
@@ -187,6 +188,7 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
       }));
       return c;
     });
+    flash(`${npc?.name || "NPC"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   const addRelationship = (npcId) => {
