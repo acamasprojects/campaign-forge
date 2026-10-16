@@ -124,8 +124,17 @@ export default function MonsterPanel({ campaign, update, flash, focusId, onConsu
   };
 
   const removeMonster = (id) => {
+    const monster = campaign.monsters.find((x) => x.id === id);
     update((c) => {
       c.monsters = c.monsters.filter((m) => m.id !== id);
+      c.grids = c.grids.map((g) => ({
+        ...g,
+        tokens: g.tokens.map((t) =>
+          t.linkedType === "monsters" && t.linkedId === id
+            ? { ...t, linkedType: null, linkedId: null, label: t.label || monster?.name || "" }
+            : t
+        ),
+      }));
       return c;
     });
   };

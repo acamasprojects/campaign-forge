@@ -130,6 +130,7 @@ export default function QuestPanel({ campaign, update, flash, focusId, onConsume
   const removeQuest = (id) => {
     update((c) => {
       c.quests = c.quests.filter((q) => q.id !== id);
+      c.sessions = c.sessions.map((s) => ({ ...s, relatedQuestIds: (s.relatedQuestIds || []).filter((x) => x !== id) }));
       return c;
     });
   };
