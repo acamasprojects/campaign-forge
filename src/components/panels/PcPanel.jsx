@@ -109,11 +109,20 @@ export default function PcPanel({ campaign, update, flash, focusId, onConsumeFoc
   };
 
   const removePc = (id) => {
+    const pc = campaign.pcs.find((x) => x.id === id);
     update((c) => {
       c.pcs = c.pcs.filter((p) => p.id !== id);
       c.quests = c.quests.map((q) => ({ ...q, relatedPcIds: q.relatedPcIds.filter((x) => x !== id) }));
       c.sessions = c.sessions.map((s) => ({ ...s, relatedPcIds: s.relatedPcIds.filter((x) => x !== id) }));
       c.items = c.items.map((i) => (i.ownerPcId === id ? { ...i, ownerPcId: null } : i));
+      c.grids = c.grids.map((g) => ({
+        ...g,
+        tokens: g.tokens.map((t) =>
+          t.linkedType === "pcs" && t.linkedId === id
+            ? { ...t, linkedType: null, linkedId: null, label: t.label || pc?.name || "" }
+            : t
+        ),
+      }));
       return c;
     });
   };

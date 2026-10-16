@@ -113,6 +113,9 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
       c.quests = c.quests.map((q) => (q.locationId === id ? { ...q, locationId: null } : q));
       c.pcs = c.pcs.map((p) => (p.hometownLocationId === id ? { ...p, hometownLocationId: null } : p));
       c.items = c.items.map((i) => (i.locationId === id ? { ...i, locationId: null } : i));
+      c.monsters = c.monsters.map((m) => (m.locationId === id ? { ...m, locationId: null } : m));
+      c.sessions = c.sessions.map((s) => ({ ...s, relatedLocationIds: (s.relatedLocationIds || []).filter((x) => x !== id) }));
+      c.grids = c.grids.map((g) => (g.locationId === id ? { ...g, locationId: null } : g));
       return c;
     });
   };

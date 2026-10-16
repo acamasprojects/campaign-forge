@@ -154,16 +154,30 @@ export default function NpcPanel({ campaign, update, flash, focusId, onConsumeFo
   };
 
   const removeNpc = (id) => {
+    const npc = campaign.npcs.find((x) => x.id === id);
     update((c) => {
       c.npcs = c.npcs
         .filter((n) => n.id !== id)
         .map((n) => ({ ...n, relationships: (n.relationships || []).filter((r) => r.npcId !== id) }));
+      c.pcs = c.pcs.map((p) => ({ ...p, relationships: (p.relationships || []).filter((r) => r.npcId !== id) }));
       c.quests = c.quests.map((q) => ({
         ...q,
         giverId: q.giverId === id ? null : q.giverId,
         relatedNpcIds: q.relatedNpcIds.filter((x) => x !== id),
       }));
+      c.sessions = c.sessions.map((s) => ({ ...s, relatedNpcIds: (s.relatedNpcIds || []).filter((x) => x !== id) }));
       c.items = c.items.map((i) => (i.ownerNpcId === id ? { ...i, ownerNpcId: null } : i));
+      // Unlink any battle-grid token pointing at this NPC instead of leaving
+      // a dangling reference — keep the token (it may represent a creature
+      // mid-combat) and backfill its label so it doesn't go generic.
+      c.grids = c.grids.map((g) => ({
+        ...g,
+        tokens: g.tokens.map((t) =>
+          t.linkedType === "npcs" && t.linkedId === id
+            ? { ...t, linkedType: null, linkedId: null, label: t.label || npc?.name || "" }
+            : t
+        ),
+      }));
       return c;
     });
   };
