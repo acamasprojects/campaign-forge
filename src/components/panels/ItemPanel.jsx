@@ -6,6 +6,7 @@ import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
 import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
+import LootRollerModal from "../LootRollerModal.jsx";
 
 const RARITY_COLOR = {
   common: "#6E655C",
@@ -48,6 +49,7 @@ export default function ItemPanel({ campaign, update, flash, focusId, onConsumeF
   const [pinnedOnly, setPinnedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
+  const [lootRollerOpen, setLootRollerOpen] = useState(false);
   const cardRefs = useRef({});
 
   const locationName = (id) => campaign.locations.find((l) => l.id === id)?.name || null;
@@ -137,10 +139,17 @@ export default function ItemPanel({ campaign, update, flash, focusId, onConsumeF
     <div className="cf-panel">
       <div className="cf-panel-head-row">
         <h2 className="cf-panel-title">Items</h2>
-        <button className="cf-btn cf-btn-primary" onClick={addItem}>
-          + New Item
-        </button>
+        <div className="cf-panel-head-actions">
+          <button className="cf-btn cf-btn-ghost" onClick={() => setLootRollerOpen(true)}>
+            🎲 Loot Roller
+          </button>
+          <button className="cf-btn cf-btn-primary" onClick={addItem}>
+            + New Item
+          </button>
+        </div>
       </div>
+
+      {lootRollerOpen && <LootRollerModal campaign={campaign} onClose={() => setLootRollerOpen(false)} />}
 
       <FilterBar
         search={search}

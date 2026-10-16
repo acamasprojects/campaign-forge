@@ -414,6 +414,17 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
   border-radius: 2px; cursor: pointer;
 }
 
+/* ---------- loot roller ---------- */
+.cf-loot-roll-row { display: flex; gap: 10px; align-items: flex-end; margin-top: 4px; }
+.cf-loot-count-field { flex: 0 0 120px; margin-bottom: 0; }
+.cf-loot-result-list { margin-top: 16px; }
+.cf-loot-result-row {
+  display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);
+  border-radius: 2px; padding: 10px 12px; background: var(--ink-2);
+}
+.cf-loot-result-row > div:first-child { flex: 1; }
+.cf-loot-result-name { font-family: var(--font-display); font-size: 14px; color: var(--text-bright); }
+
 /* ---------- toast ---------- */
 .cf-toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
