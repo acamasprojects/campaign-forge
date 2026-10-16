@@ -109,6 +109,8 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
   };
 
   const removeLocation = (id) => {
+    const location = campaign.locations.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.locations = c.locations.filter((l) => l.id !== id);
       c.locations = c.locations.map((l) => (l.parentId === id ? { ...l, parentId: null } : l));
@@ -121,6 +123,7 @@ export default function LocationPanel({ campaign, update, flash, focusId, onCons
       c.grids = c.grids.map((g) => (g.locationId === id ? { ...g, locationId: null } : g));
       return c;
     });
+    flash(`${location?.name || "Location"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   return (

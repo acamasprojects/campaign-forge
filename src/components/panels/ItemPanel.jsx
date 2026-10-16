@@ -127,10 +127,13 @@ export default function ItemPanel({ campaign, update, flash, focusId, onConsumeF
   };
 
   const removeItem = (id) => {
+    const item = campaign.items.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.items = c.items.filter((i) => i.id !== id);
       return c;
     });
+    flash(`${item?.name || "Item"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   return (

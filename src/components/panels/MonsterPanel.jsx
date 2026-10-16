@@ -128,6 +128,7 @@ export default function MonsterPanel({ campaign, update, flash, focusId, onConsu
 
   const removeMonster = (id) => {
     const monster = campaign.monsters.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.monsters = c.monsters.filter((m) => m.id !== id);
       c.grids = c.grids.map((g) => ({
@@ -140,6 +141,7 @@ export default function MonsterPanel({ campaign, update, flash, focusId, onConsu
       }));
       return c;
     });
+    flash(`${monster?.name || "Monster"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   return (
