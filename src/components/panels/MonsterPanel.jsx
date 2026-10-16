@@ -6,6 +6,7 @@ import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
 import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
+import EncounterCalculatorModal from "../EncounterCalculatorModal.jsx";
 
 const titleCase = (s) => (s ? s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "");
 
@@ -42,6 +43,7 @@ export default function MonsterPanel({ campaign, update, flash, focusId, onConsu
   const [pinnedOnly, setPinnedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const cardRefs = useRef({});
 
   const locationName = (id) => campaign.locations.find((l) => l.id === id)?.name || null;
@@ -146,10 +148,17 @@ export default function MonsterPanel({ campaign, update, flash, focusId, onConsu
     <div className="cf-panel">
       <div className="cf-panel-head-row">
         <h2 className="cf-panel-title">Bestiary</h2>
-        <button className="cf-btn cf-btn-primary" onClick={addMonster}>
-          + New Monster
-        </button>
+        <div className="cf-panel-head-actions">
+          <button className="cf-btn cf-btn-ghost" onClick={() => setCalculatorOpen(true)}>
+            ⚔ Encounter Calculator
+          </button>
+          <button className="cf-btn cf-btn-primary" onClick={addMonster}>
+            + New Monster
+          </button>
+        </div>
       </div>
+
+      {calculatorOpen && <EncounterCalculatorModal campaign={campaign} onClose={() => setCalculatorOpen(false)} />}
 
       <FilterBar
         search={search}
