@@ -6,6 +6,7 @@ import FilterBar from "../FilterBar.jsx";
 import TagInput from "../TagInput.jsx";
 import ChoiceChips from "../ChoiceChips.jsx";
 import LinkPicker from "../LinkPicker.jsx";
+import EncounterCalculatorModal from "../EncounterCalculatorModal.jsx";
 
 const titleCase = (s) => (s ? s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "");
 
@@ -42,6 +43,7 @@ export default function MonsterPanel({ campaign, update, flash, focusId, onConsu
   const [pinnedOnly, setPinnedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("relevance");
   const [expandedId, setExpandedId] = useState(null);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const cardRefs = useRef({});
 
   const locationName = (id) => campaign.locations.find((l) => l.id === id)?.name || null;
@@ -128,6 +130,7 @@ export default function MonsterPanel({ campaign, update, flash, focusId, onConsu
 
   const removeMonster = (id) => {
     const monster = campaign.monsters.find((x) => x.id === id);
+    const snapshot = campaign;
     update((c) => {
       c.monsters = c.monsters.filter((m) => m.id !== id);
       c.grids = c.grids.map((g) => ({
@@ -140,16 +143,24 @@ export default function MonsterPanel({ campaign, update, flash, focusId, onConsu
       }));
       return c;
     });
+    flash(`${monster?.name || "Monster"} deleted`, { onUndo: () => update(() => snapshot) });
   };
 
   return (
     <div className="cf-panel">
       <div className="cf-panel-head-row">
         <h2 className="cf-panel-title">Bestiary</h2>
-        <button className="cf-btn cf-btn-primary" onClick={addMonster}>
-          + New Monster
-        </button>
+        <div className="cf-panel-head-actions">
+          <button className="cf-btn cf-btn-ghost" onClick={() => setCalculatorOpen(true)}>
+            ⚔ Encounter Calculator
+          </button>
+          <button className="cf-btn cf-btn-primary" onClick={addMonster}>
+            + New Monster
+          </button>
+        </div>
       </div>
+
+      {calculatorOpen && <EncounterCalculatorModal campaign={campaign} onClose={() => setCalculatorOpen(false)} />}
 
       <FilterBar
         search={search}

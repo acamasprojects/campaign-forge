@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useCampaignStore } from "./hooks/useCampaignStore.js";
 import Sidebar from "./components/Sidebar.jsx";
 import TopBar from "./components/TopBar.jsx";
@@ -21,15 +21,20 @@ import { uid } from "./data/model.js";
 export default function App() {
   const store = useCampaignStore();
   const [tab, setTab] = useState("home");
-  const [toast, setToast] = useState(null);
+  const [toast, setToast] = useState(null); // { msg, onUndo? } | null
   const [focus, setFocus] = useState(null); // { type, id } | null
   const [tagManagerOpen, setTagManagerOpen] = useState(false);
   const [playerViewOpen, setPlayerViewOpen] = useState(false);
   const [diceRollerOpen, setDiceRollerOpen] = useState(false);
+  const toastTimer = useRef(null);
 
-  const flash = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 1800);
+  // An undo-capable toast stays up longer (6s vs 1.8s) and shows an Undo
+  // button that just re-applies the pre-delete campaign snapshot the caller
+  // captured — same restore primitive as any other edit, nothing special.
+  const flash = (msg, { onUndo } = {}) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({ msg, onUndo });
+    toastTimer.current = setTimeout(() => setToast(null), onUndo ? 6000 : 1800);
   };
 
   const onNavigate = (type, id) => {
@@ -212,7 +217,23 @@ export default function App() {
           </>
         )}
       </main>
-      {toast && <div className="cf-toast">{toast}</div>}
+      {toast && (
+        <div className="cf-toast">
+          {toast.msg}
+          {toast.onUndo && (
+            <button
+              type="button"
+              className="cf-toast-undo"
+              onClick={() => {
+                toast.onUndo();
+                setToast(null);
+              }}
+            >
+              Undo
+            </button>
+          )}
+        </div>
+      )}
       {playerViewOpen && store.current && (
         <PlayerView campaign={store.current} onClose={() => setPlayerViewOpen(false)} />
       )}

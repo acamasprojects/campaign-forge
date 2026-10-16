@@ -414,6 +414,53 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
   border-radius: 2px; cursor: pointer;
 }
 
+/* ---------- panel head actions (multiple buttons in one head row) ---------- */
+.cf-panel-head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- encounter calculator ---------- */
+.cf-encounter-add-row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+.cf-encounter-add-row select { flex: 1; }
+.cf-encounter-monster-list { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.cf-encounter-monster-row {
+  display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);
+  border-radius: 2px; padding: 8px 10px; background: var(--ink-2);
+}
+.cf-encounter-monster-name { flex: 1; font-size: 13.5px; color: var(--text-bright); }
+.cf-encounter-result {
+  margin-top: 20px; border: 1px solid var(--border-3); border-radius: 3px;
+  padding: 14px 16px; background: var(--ink-2);
+}
+.cf-encounter-result-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.cf-encounter-difficulty-badge {
+  font-family: var(--font-display); font-size: 16px; text-transform: uppercase; letter-spacing: 0.04em;
+  border: 1px solid; border-radius: 2px; padding: 4px 12px;
+}
+.cf-encounter-xp { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); }
+.cf-encounter-thresholds { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-dim); }
+.cf-encounter-threshold { display: flex; align-items: center; gap: 6px; }
+
+/* ---------- portraits ---------- */
+.cf-image-upload-preview { display: flex; align-items: center; gap: 12px; }
+.cf-image-upload-thumb { width: 56px; height: 56px; border-radius: 3px; object-fit: cover; border: 1px solid var(--border-3); }
+.cf-image-upload-actions { display: flex; gap: 6px; }
+.cf-image-upload-input { display: none; }
+.cf-card-thumbnail { width: 22px; height: 22px; border-radius: 2px; object-fit: cover; border: 1px solid var(--border-3); flex-shrink: 0; }
+.cf-playerview-portrait {
+  width: 100%; max-width: 240px; border-radius: 3px; object-fit: cover;
+  border: 1px solid var(--border-2); margin-bottom: 16px; display: block;
+}
+
+/* ---------- loot roller ---------- */
+.cf-loot-roll-row { display: flex; gap: 10px; align-items: flex-end; margin-top: 4px; }
+.cf-loot-count-field { flex: 0 0 120px; margin-bottom: 0; }
+.cf-loot-result-list { margin-top: 16px; }
+.cf-loot-result-row {
+  display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);
+  border-radius: 2px; padding: 10px 12px; background: var(--ink-2);
+}
+.cf-loot-result-row > div:first-child { flex: 1; }
+.cf-loot-result-name { font-family: var(--font-display); font-size: 14px; color: var(--text-bright); }
+
 /* ---------- dice roller ---------- */
 .cf-dice-controls-row { display: flex; gap: 10px; align-items: flex-end; margin-top: 14px; }
 .cf-dice-field { flex: 0 0 90px; margin-bottom: 0; }
@@ -431,4 +478,10 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
   background: var(--ink-3); border: 1px solid var(--blood); color: var(--text-bright);
   padding: 9px 18px; border-radius: 2px; font-size: 12.5px; z-index: 50;
+  display: flex; align-items: center; gap: 14px;
 }
+.cf-toast-undo {
+  background: none; border: none; color: var(--blood-2); font-weight: 700;
+  font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.03em; cursor: pointer; padding: 0;
+}
+.cf-toast-undo:hover { color: var(--text-bright); text-decoration: underline; }

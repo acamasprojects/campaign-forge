@@ -83,6 +83,7 @@ export const emptyNpc = () => ({
   tags: [],
   description: "",
   relationships: [], // [{ id, npcId, label }] — directed edge to another NPC (e.g. "rival", "sister")
+  portraitUrl: "", // data: URI, already resized/compressed client-side — see ImageUpload.jsx
   pinned: false,
   createdAt: Date.now(),
 });
@@ -96,6 +97,7 @@ export const emptyLocation = () => ({
   parentId: null,
   tags: [],
   description: "",
+  portraitUrl: "",
   pinned: false,
   createdAt: Date.now(),
 });
@@ -242,6 +244,7 @@ export const emptyPc = () => ({
   hometownLocationId: null,
   backstory: "", // hooks/goals the DM can pull from
   relationships: [], // [{ id, npcId, label }] — directed edge to an NPC (e.g. "estranged brother")
+  portraitUrl: "",
   tags: [],
   pinned: false,
   createdAt: Date.now(),
@@ -274,6 +277,7 @@ export const normalizeCampaign = (c) => ({
     locationId: n.locationId ?? null,
     tags: n.tags || [],
     description: n.description || "",
+    portraitUrl: n.portraitUrl || "",
     relationships: (n.relationships || []).map((r) => ({ id: r.id || uid(), npcId: r.npcId ?? null, label: r.label || "" })),
     pinned: n.pinned || false,
     createdAt: n.createdAt || Date.now(),
@@ -286,6 +290,7 @@ export const normalizeCampaign = (c) => ({
     parentId: l.parentId ?? null,
     tags: l.tags || [],
     description: l.description || "",
+    portraitUrl: l.portraitUrl || "",
     pinned: l.pinned || false,
     createdAt: l.createdAt || Date.now(),
   })),
@@ -345,6 +350,7 @@ export const normalizeCampaign = (c) => ({
     maxHitPoints: p.maxHitPoints ?? null,
     hometownLocationId: p.hometownLocationId ?? null,
     backstory: p.backstory || "",
+    portraitUrl: p.portraitUrl || "",
     relationships: (p.relationships || []).map((r) => ({ id: r.id || uid(), npcId: r.npcId ?? null, label: r.label || "" })),
     tags: p.tags || [],
     pinned: p.pinned || false,
